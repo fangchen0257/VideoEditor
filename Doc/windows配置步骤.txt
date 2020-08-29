@@ -1,0 +1,6 @@
+QtCreator配置步骤：https://shotcut.org/notes/windowsdev/
+
+Qt版本&编译调试：  
+\\192.168.0.102\音视频编辑\Shotcut_compile
+administrator
+easeus123
