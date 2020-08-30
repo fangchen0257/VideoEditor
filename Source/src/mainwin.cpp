@@ -5,8 +5,6 @@
 #include "qmltypesregister.h"
 #include <QSplitter>
 #include "timeline.h"
-#include <qtablewidget.h>
-#include <qlineedit.h>
 
 CMainWin::CMainWin(QWidget *parent)
     :QMainWindow(parent, Qt::FramelessWindowHint|Qt::Window|Qt::WindowMinimizeButtonHint)
@@ -60,41 +58,10 @@ void CMainWin::Layout()
         pVideoWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
         pSplitter->addWidget(pVideoWidget);
 
-#if 0
         CTimeLine* pTimeLine = new CTimeLine;
         if (nullptr == pTimeLine) break;
         pSplitter->addWidget(pTimeLine);
         pSplitter->setStretchFactor(0,3);
         pSplitter->setStretchFactor(1,1);
-#endif
-
-        QWidget* pWidget = new QWidget;
-        pWidget->setMinimumHeight(150);
-        QVBoxLayout* pVboxMain1 = new QVBoxLayout;
-        if (nullptr == pVboxMain1) break;
-        pVboxMain1->setContentsMargins(0, 0, 0, 0);
-        pVboxMain1->setSpacing(0);
-        pWidget->setLayout(pVboxMain1);
-        QQuickWidget* pOperWidget = new QQuickWidget;
-        if (nullptr == pOperWidget) break;
-        pOperWidget->setSource((QUrl("qrc:/qmls/timeline/TimeLineView.qml")));
-        pOperWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
-        pVboxMain1->addWidget(pOperWidget, 1);
-
-        QSpacerItem* pVItem = new QSpacerItem(0,0,QSizePolicy::Preferred,QSizePolicy::Expanding);
-        if (nullptr == pVItem) break;
-        //pVboxMain1->addSpacerItem(pVItem);
-
-        QTableWidget* pTableWidget = new QTableWidget(3,3);
-        if (nullptr == pTableWidget) break;
-        //pTableWidget->setMinimumHeight(100);
-        //pTableWidget->move(0,40);
-        pVboxMain1->addWidget(pTableWidget, 3);
-
-        QLineEdit* pEidt = new QLineEdit;
-        //pVboxMain1->addWidget(pEidt);
-
-        pSplitter->addWidget(pWidget);
-
     } while(0);
 }

@@ -24,10 +24,10 @@ void CTimeLine::Layout()
         if (nullptr == pOperWidget) break;
         pOperWidget->setSource((QUrl("qrc:/qmls/timeline/TrackHeader.qml")));
         pOperWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
-        pVboxMain->addWidget(pOperWidget);
+        pVboxMain->addWidget(pOperWidget, 1);
 
         QTableWidget* pTableWidget = new QTableWidget(3,3);
         if (nullptr == pTableWidget) break;
-        pVboxMain->addWidget(pTableWidget);
+        pVboxMain->addWidget(pTableWidget, 3);
     } while(0);
 }
