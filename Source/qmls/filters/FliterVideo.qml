@@ -14,7 +14,7 @@ Item {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         width: 100
-        color: "#242424"
+        color: "#212735"
 
         Row {
             id: navigateBarLayout
@@ -42,6 +42,15 @@ Item {
 
     }
 
+    Rectangle {
+        id: splitVLine
+        anchors.left: navigateBar.right
+        anchors.top: parent.top
+        width: 1
+        anchors.bottom: parent.bottom
+        color: "#151921"
+    }
+
     ButtonGroup{
         buttons: navigateBarLayout.children
     }
@@ -59,11 +68,11 @@ Item {
     }
     Rectangle {
         id: videoMenu
-        anchors.left: navigateBar.right
+        anchors.left: splitVLine.right
         anchors.top: parent.top
         anchors.right: parent.right
         height: 40
-        color: "#242424"
+        color: "#212735"
 
         LibQmlComponent.CommonStyleButton{
             height: 30
@@ -84,15 +93,28 @@ Item {
 
     }   //end
 
-    // video show view
-    Flow{
-        id: videoLayout
-        spacing: 10
-        anchors.margins: 10
-        anchors.left: navigateBar.right
+    Rectangle {
+        id: splitHLine
+        anchors.left: splitVLine.right
         anchors.top: videoMenu.bottom
         anchors.right: parent.right
+        height: 1
+        color: "#151921"
+    }
+
+    // video show view
+    Rectangle {
+        anchors.left: splitVLine.right
+        anchors.top: splitHLine.bottom
+        anchors.right: parent.right
         anchors.bottom: parent.bottom
+        color: "#212735"
+        Flow{
+            id: videoLayout
+            spacing: 10
+            anchors.margins: 10
+            anchors.fill: parent
+        }
     }
 
     function createVideoItem(pathList){

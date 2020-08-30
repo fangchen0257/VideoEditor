@@ -3,11 +3,16 @@ import "./"
 
 Item {
 
-    TrackHeader{
-        id:trackHeader
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.right: parent.right
-        height: 45
+    Rectangle{
+        anchors.fill: parent
+        color: "#212735"
+
+        TrackHeader{
+            id:trackHeader
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.right: parent.right
+            height: 45
+        }
     }
 }

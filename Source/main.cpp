@@ -11,6 +11,7 @@
 #include <qdir.h>
 
 #include "src/qmltypesregister.h"
+#include "src/mainwin.h"
 
 void QtMessageLogHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
@@ -111,6 +112,11 @@ int main(int argc, char *argv[])
     SetCurExecPath();
     installTranslator(&app);
 
+    CMainWin mainw;
+    mainw.setFixedSize(1280,768);
+    mainw.show();
+
+#if 0
     QmlTypesRegister::instance().RegisterCommonType();
     QQmlApplicationEngine engine;
     QmlTypesRegister::instance().setGlobalCariable(engine.rootContext());
@@ -121,6 +127,7 @@ int main(int argc, char *argv[])
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
     engine.load(url);
+#endif
 
     return app.exec();
 }

@@ -21,7 +21,7 @@ Item {
         resizing: true
         handleDelegate: Rectangle {
             height: 2
-            color: "black"
+            color: "#151921"
         }
 
         SplitView {
@@ -33,7 +33,7 @@ Item {
             resizing: true
             handleDelegate: Rectangle {
                 width: 2
-                color: "black"
+                color: "#151921"
             }
 
             Filters.FiltersView {

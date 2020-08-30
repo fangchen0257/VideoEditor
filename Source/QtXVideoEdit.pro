@@ -1,4 +1,4 @@
-QT += quick
+QT += quick quickwidgets
 
 CONFIG += c++17
 
@@ -14,7 +14,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    src/QtLib/ImgButton.cpp \
+    src/QtLib/winfrmtitle.cpp \
         src/globalutinityobject.cpp \
+    src/mainwin.cpp \
         src/qmltypesregister.cpp \
         src\framelrender.cpp \
         src\frameplayview.cpp \
@@ -42,7 +45,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    src/QtLib/ImgButton.h \
+    src/QtLib/winfrmtitle.h \
     src/globalutinityobject.h \
+    src/mainwin.h \
     src/qmltypesregister.h \
     src\framelrender.h \
     src\frameplayview.h \
