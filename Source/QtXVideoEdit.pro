@@ -19,6 +19,7 @@ SOURCES += \
         src/globalutinityobject.cpp \
     src/mainwin.cpp \
         src/qmltypesregister.cpp \
+    src/timeline.cpp \
         src\framelrender.cpp \
         src\frameplayview.cpp \
         main.cpp \
@@ -50,6 +51,7 @@ HEADERS += \
     src/globalutinityobject.h \
     src/mainwin.h \
     src/qmltypesregister.h \
+    src/timeline.h \
     src\framelrender.h \
     src\frameplayview.h \
     src/EUMltCtl.h \

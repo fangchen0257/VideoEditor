@@ -16,52 +16,27 @@ Item {
     property int topSplitMaxHeight: root.height - bottomSplitMinHeight
 
     SplitView {
+        orientation: Qt.Horizontal
+        height: topSplitMaxHeight
         anchors.fill: parent
-        orientation: Qt.Vertical
         resizing: true
         handleDelegate: Rectangle {
-            height: 2
+            width: 2
             color: "#151921"
         }
 
-        SplitView {
-            orientation: Qt.Horizontal
-            height: topSplitMaxHeight
-            Layout.maximumHeight: topSplitMaxHeight
-            Layout.minimumHeight: bottomSplitMinHeight
-            Layout.fillHeight: true
-            resizing: true
-            handleDelegate: Rectangle {
-                width: 2
-                color: "#151921"
-            }
-
-            Filters.FiltersView {
-                width: funcViewWidth
-                Layout.maximumWidth: funcViewMaxWidth
-                Layout.minimumWidth: funcViewMinWidth
-                height: parent.height
-            }
-
-            Play.PlayView {
-                id: playLoader
-                Layout.minimumWidth: funcViewMinWidth
-                Layout.fillWidth: true
-                height: parent.height
-            }
-
+        Filters.FiltersView {
+            width: funcViewWidth
+            Layout.maximumWidth: funcViewMaxWidth
+            Layout.minimumWidth: funcViewMinWidth
+            height: parent.height
         }
 
-        TimeLine.TimeLineView{
-            width: parent.width
-            Layout.minimumHeight: bottomSplitMinHeight
-
+        Play.PlayView {
+            id: playLoader
+            Layout.minimumWidth: funcViewMinWidth
+            Layout.fillWidth: true
+            height: parent.height
         }
-
     }
-
-    Component.onCompleted: {
-
-    }
-
 }
