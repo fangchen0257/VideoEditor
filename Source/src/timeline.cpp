@@ -22,12 +22,13 @@ void CTimeLine::Layout()
 
         QQuickWidget* pOperWidget = new QQuickWidget;
         if (nullptr == pOperWidget) break;
+        pOperWidget->setFixedHeight(45);
         pOperWidget->setSource((QUrl("qrc:/qmls/timeline/TrackHeader.qml")));
         pOperWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
-        pVboxMain->addWidget(pOperWidget, 1);
+        pVboxMain->addWidget(pOperWidget);
 
         QTableWidget* pTableWidget = new QTableWidget(3,3);
         if (nullptr == pTableWidget) break;
-        pVboxMain->addWidget(pTableWidget, 3);
+        pVboxMain->addWidget(pTableWidget);
     } while(0);
 }

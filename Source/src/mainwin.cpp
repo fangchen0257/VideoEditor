@@ -47,7 +47,7 @@ void CMainWin::Layout()
 
         QSplitter* pSplitter = new QSplitter(Qt::Vertical);
         if (nullptr == pSplitter) break;
-        pSplitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        pSplitter->setStyleSheet("QSplitter::handle {background-color:#151921; image:url(:/res/drag.png);}");
         pVboxMain->addWidget(pSplitter);
 
         QQuickWidget* pVideoWidget = new QQuickWidget;
@@ -61,7 +61,9 @@ void CMainWin::Layout()
         CTimeLine* pTimeLine = new CTimeLine;
         if (nullptr == pTimeLine) break;
         pSplitter->addWidget(pTimeLine);
-        pSplitter->setStretchFactor(0,3);
-        pSplitter->setStretchFactor(1,1);
+
+        QList<int> listSize;
+        listSize << 550 << 150;
+        pSplitter->setSizes(listSize);
     } while(0);
 }

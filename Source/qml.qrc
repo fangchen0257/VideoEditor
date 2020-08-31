@@ -36,7 +36,6 @@
         <file>res/playbackground.yuv</file>
         <file>qmls/filters/FiltersView.qml</file>
         <file>qmls/play/PlayView.qml</file>
-        <file>qmls/timeline/TimeLineView.qml</file>
         <file>qmls/filters/FilterNavigationBar.qml</file>
         <file>qmls/filters/FliterVideo.qml</file>
         <file>qmls/filters/FilterPhoto.qml</file>
@@ -84,7 +83,6 @@
         <file>qmls/component/DurationSplitItem.qml</file>
         <file>qmls/widgets/GlobalMousemonitor.qml</file>
         <file>qmls/timeline/TrackHeader.qml</file>
-        <file>qmls/timeline/TrackTableViewer.qml</file>
         <file>res/cut_zoom_disable.png</file>
         <file>res/cut_zoom_hover_pressed.png</file>
         <file>res/cut_zoom_normal.png</file>
@@ -150,5 +148,6 @@
         <file>res/videoadd_h.png</file>
         <file>res/videodel.png</file>
         <file>res/videodel_h.png</file>
+        <file>res/drag.png</file>
     </qresource>
 </RCC>
