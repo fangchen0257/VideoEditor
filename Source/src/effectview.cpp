@@ -140,6 +140,7 @@ CBox *CEffectView::InitCellItem(QString strIcon, QString strText, QVector<QStrin
             if (nullptr == pImgMute) break;
             pVboxVisibleMute->PackStart(pImgMute);
         }
+
         pCell->PackStart(pVboxVisibleMute);
     } while(0);
 
