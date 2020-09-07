@@ -25,8 +25,6 @@ public:
     int getLength();
     void onChanged();
 
-    static string XML(Mlt::Service* service, bool withProfile = false, bool withMetadata = false);
-
 private:
     void addBackgroundTrack(shared_ptr<Mlt::Tractor> &tractor);
     void addMainTrack(shared_ptr<Mlt::Tractor> &tractor);

@@ -35,7 +35,7 @@ string CEUTrack::xml(int clipIndex)
         shared_ptr<Mlt::ClipInfo> info(m_playlist->clip_info(clipIndex));
         CHECK_BREAK(!info);
 
-        xml = CEUTractor::XML(info->cut);
+        xml = XML(info->cut);
 
     } while (false);
 
@@ -56,37 +56,7 @@ QImage CEUTrack::image(int clipIndex, int width, int height, int frameNumber)
         frameNumber += info->frame_in;
         frameNumber = min(frameNumber, info->frame_out);
 
-        shared_ptr<Mlt::Producer> producer(m_playlist->get_clip(clipIndex));
-        CHECK_BREAK(!producer);
-
-        CHECK_BREAK(!!producer->seek(frameNumber));
-        shared_ptr<Mlt::Frame> frame(producer->get_frame());
-        if (!frame || !frame->is_valid())
-        {
-            img = QImage(width, height, QImage::Format_ARGB32);
-            img.fill(QColor(Qt::red).rgb());
-            break;
-        }
-
-        if (width > 0 && height > 0)
-        {
-            frame->set("rescale.interp", "bilinear");
-            frame->set("deinterlace_method", "onefield");
-            frame->set("top_field_first", -1);
-        }
-
-        mlt_image_format format = mlt_image_rgb24a;
-        const uchar *image = frame->get_image(format, width, height);
-        if (!image)
-        {
-            img = QImage(width, height, QImage::Format_ARGB32);
-            img.fill(QColor(Qt::green).rgb());
-            break;
-        }
-
-        QImage temp(width, height, QImage::Format_ARGB32);
-        memcpy(temp.scanLine(0), image, size_t(width * height * 4));
-        img = temp.rgbSwapped();
+        img = IMAGE(m_playlist->get_clip(clipIndex), width, height, frameNumber);
 
     } while (false);
 

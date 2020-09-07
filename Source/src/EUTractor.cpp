@@ -16,7 +16,7 @@ bool CEUTractor::Init()
 
     do
     {
-        m_tractor.reset(new Mlt::Tractor(CMltCtl::profile()));
+        m_tractor.reset(new Mlt::Tractor(profile));
         addBackgroundTrack(m_tractor);
         addMainTrack(m_tractor);
         addSubTrack(m_tractor);
@@ -65,56 +65,15 @@ void CEUTractor::onChanged()
     adjustFilterOrder();
 }
 
-string CEUTractor::XML(Mlt::Service* service, bool withProfile, bool withMetadata)
-{
-    string strXML;
-
-    do
-    {
-        CHECK_BREAK(!service);
-
-        static const char* propertyName = "string";
-        Mlt::Consumer c(CMltCtl::profile(), "xml", propertyName);
-        Mlt::Service s(service->get_service());
-        CHECK_BREAK(!s.is_valid());
-
-        int ignore = s.get_int("ignore_points");
-        if (ignore)
-        {
-            s.set("ignore_points", 0);
-        }
-
-        c.set("time_format", "clock");
-        if (!withMetadata)
-        {
-            c.set("no_meta", 1);
-        }
-
-        c.set("no_profile", !withProfile);
-        c.set("store", "shotcut");
-        c.set("root", "");
-        c.connect(s);
-        c.start();
-        if (ignore)
-        {
-            s.set("ignore_points", ignore);
-        }
-        strXML = c.get(propertyName);
-
-    } while (false);
-
-    return strXML;
-}
-
 void CEUTractor::addBackgroundTrack(shared_ptr<Mlt::Tractor> &tractor)
 {
     do
     {
         CHECK_BREAK(!tractor->is_valid());
 
-        m_playlist[BackgroundTrack].reset(new Mlt::Playlist(CMltCtl::profile()));
+        m_playlist[BackgroundTrack].reset(new Mlt::Playlist(profile));
         m_playlist[BackgroundTrack]->set("id", kBackgroundTrackId);
-        Mlt::Producer producer(CMltCtl::profile(), "color:0");
+        Mlt::Producer producer(profile, "color:0");
         producer.set("mlt_image_format", "rgb24a");
         producer.set("length", 1);
         producer.set("id", "black");
@@ -132,12 +91,12 @@ void CEUTractor::addMainTrack(shared_ptr<Mlt::Tractor> &tractor)
     {
         CHECK_BREAK(!tractor->is_valid());
 
-        m_playlist[MainVideoTrack].reset(new Mlt::Playlist(CMltCtl::profile()));
+        m_playlist[MainVideoTrack].reset(new Mlt::Playlist(profile));
         m_playlist[MainVideoTrack]->set(kVideoTrackProperty, 1);
         m_playlist[MainVideoTrack]->blank(0);
         tractor->set_track(*m_playlist[MainVideoTrack], MainVideoTrack);
 
-        Mlt::Transition mix(CMltCtl::profile(), "mix");
+        Mlt::Transition mix(profile, "mix");
         mix.set("always_active", 1);
         mix.set("sum", 1);
         tractor->plant_transition(mix, 0, MainVideoTrack);
@@ -151,17 +110,17 @@ void CEUTractor::addSubTrack(shared_ptr<Mlt::Tractor> &tractor)
     {
         CHECK_BREAK(!tractor->is_valid());
 
-        m_playlist[SubVideoTrack_0].reset(new Mlt::Playlist(CMltCtl::profile()));
+        m_playlist[SubVideoTrack_0].reset(new Mlt::Playlist(profile));
         m_playlist[SubVideoTrack_0]->set(kVideoTrackProperty, 1);
         m_playlist[SubVideoTrack_0]->blank(0);
         tractor->set_track(*m_playlist[SubVideoTrack_0], SubVideoTrack_0);
 
-        Mlt::Transition mix(CMltCtl::profile(), "mix");
+        Mlt::Transition mix(profile, "mix");
         mix.set("always_active", 1);
         mix.set("sum", 1);
         tractor->plant_transition(mix, 0, SubVideoTrack_0);
 
-        Mlt::Transition composite(CMltCtl::profile(), m_bPlayerGPU ? "movit.overlay" : "frei0r.cairoblend");
+        Mlt::Transition composite(profile, m_bPlayerGPU ? "movit.overlay" : "frei0r.cairoblend");
         tractor->plant_transition(composite, MainVideoTrack, SubVideoTrack_0);
 
     } while (false);
@@ -173,13 +132,13 @@ void CEUTractor::addAudioTrack(shared_ptr<Mlt::Tractor> &tractor)
     {
         CHECK_BREAK(!tractor->is_valid());
 
-        m_playlist[AudioTrack_0].reset( new Mlt::Playlist(CMltCtl::profile()));
+        m_playlist[AudioTrack_0].reset( new Mlt::Playlist(profile));
         m_playlist[AudioTrack_0]->set(kAudioTrackProperty, 1);
         m_playlist[AudioTrack_0]->set("hide", 1);
         m_playlist[AudioTrack_0]->blank(0);
         tractor->set_track(*m_playlist[AudioTrack_0], AudioTrack_0);
 
-        Mlt::Transition mix(CMltCtl::profile(), "mix");
+        Mlt::Transition mix(profile, "mix");
         mix.set("always_active", 1);
         mix.set("sum", 1);
         tractor->plant_transition(mix, 0, AudioTrack_0);

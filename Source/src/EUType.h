@@ -46,3 +46,13 @@ typedef enum {
 #define kDefaultTransition "lumaMix"
 #define kDefaultSubVideoFilter "defaultSubVideoFilter"
 
+
+extern Mlt::Profile profile;
+extern Mlt::Profile previewProfile;
+
+void setProfile(Mlt::Profile& profile, const char* profileName);
+shared_ptr<Mlt::Producer> createProducer(Mlt::Profile& profile, const char* urlOrXml);
+string XML(Mlt::Service* service, bool withProfile = false, bool withMetadata = false);
+QImage IMAGE(Mlt::Frame* frame, int width, int height);
+QImage IMAGE(Mlt::Producer* producer, int width, int height, int frameNumber);
+

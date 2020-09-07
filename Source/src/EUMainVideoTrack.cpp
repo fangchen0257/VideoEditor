@@ -67,18 +67,8 @@ bool CEUMainVideoTrack::appendClip(const string &urlOrXml)
 
     do
     {
-        FAIL_BREAK(urlOrXml.empty(), bRet, false);
-
-        shared_ptr<Mlt::Producer> producer;
-
-        if ('<' == urlOrXml[0])
-        {
-            producer.reset(new Mlt::Producer(CMltCtl::profile(), "xml-string", urlOrXml.c_str()));
-        }
-        else
-        {
-            producer.reset(new Mlt::Producer(CMltCtl::profile(), urlOrXml.c_str()));
-        }
+        shared_ptr<Mlt::Producer> producer = createProducer(profile, urlOrXml.c_str());
+        FAIL_BREAK(!producer, bRet, false);
 
         CALL_BREAK(appendClip(*producer), bRet);
 
@@ -116,18 +106,8 @@ bool CEUMainVideoTrack::overwrite(const string &urlOrXml, int position)
 
     do
     {
-        FAIL_BREAK(urlOrXml.empty(), bRet, false);
-
-        shared_ptr<Mlt::Producer> producer;
-
-        if ('<' == urlOrXml[0])
-        {
-            producer.reset(new Mlt::Producer(CMltCtl::profile(), "xml-string", urlOrXml.c_str()));
-        }
-        else
-        {
-            producer.reset(new Mlt::Producer(CMltCtl::profile(), urlOrXml.c_str()));
-        }
+        shared_ptr<Mlt::Producer> producer = createProducer(profile, urlOrXml.c_str());
+        FAIL_BREAK(!producer, bRet, false);
 
         CALL_BREAK(overwrite(*producer, position), bRet);
 
@@ -262,7 +242,7 @@ bool CEUMainVideoTrack::splitClip(int clipIndex, int position)
         shared_ptr<Mlt::ClipInfo> info(m_playlist->clip_info(clipIndex));
         FAIL_BREAK(!info, bRet, false);
 
-        Mlt::Producer newProducer(CMltCtl::profile(), "xml-string", CEUTractor::XML(info->producer).c_str());
+        Mlt::Producer newProducer(profile, "xml-string", XML(info->producer).c_str());
         int in = info->frame_in;
         int out = info->frame_out;
         int duration = position - m_playlist->clip_start(clipIndex);
@@ -329,8 +309,8 @@ bool CEUMainVideoTrack::addTransition(int clipIndex, int length)
         FAIL_BREAK(!producer, bRet, false);
         producer->parent().set(kTransitionProperty, kDefaultTransition);
 
-        Mlt::Transition dissolve(CMltCtl::profile(), m_tractor.playerGPU()? "movit.luma_mix" : "luma");
-        Mlt::Transition crossFade(CMltCtl::profile(), "mix:-1");
+        Mlt::Transition dissolve(profile, m_tractor.playerGPU()? "movit.luma_mix" : "luma");
+        Mlt::Transition crossFade(profile, "mix:-1");
         if (!m_tractor.playerGPU())
         {
             dissolve.set("alpha_over", 1);

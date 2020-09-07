@@ -18,9 +18,6 @@ public:
     CMltCtl();
     virtual ~CMltCtl ();
 
-    static Mlt::Profile& profile() { return m_profile; }
-    static void setProfile(const string &profile_name) { m_profileName = profile_name; }
-
     void EUInit( void *szUser, MltCtlRecvFrameFun szFun);
     int EUOpen(const char* url);
     int EUSetProducer(shared_ptr<Mlt::Producer> producer);
@@ -41,8 +38,6 @@ public:
     int Open();
 
 private:
-    static Mlt::Profile m_profile;
-    static string m_profileName;
 
     shared_ptr<Mlt::Producer> m_producer;
     shared_ptr<Mlt::Consumer> m_consumer;

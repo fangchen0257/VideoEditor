@@ -32,7 +32,8 @@ SOURCES += \
     src/EUFilterTrack.cpp \
     src/effectview.cpp \
     src/effecthorizonheader.cpp \
-    src/QtLib/box.cpp
+    src/QtLib/box.cpp \
+    src/EUType.cpp
 
 RESOURCES += qml.qrc \
     shaders.qrc

@@ -45,18 +45,8 @@ bool CEUSubVideoTrack::appendClip(const string &urlOrXml)
 
     do
     {
-        FAIL_BREAK(urlOrXml.empty(), bRet, false);
-
-        shared_ptr<Mlt::Producer> producer;
-
-        if ('<' == urlOrXml[0])
-        {
-            producer.reset(new Mlt::Producer(CMltCtl::profile(), "xml-string", urlOrXml.c_str()));
-        }
-        else
-        {
-            producer.reset(new Mlt::Producer(CMltCtl::profile(), urlOrXml.c_str()));
-        }
+        shared_ptr<Mlt::Producer> producer = createProducer(profile, urlOrXml.c_str());
+        FAIL_BREAK(!producer, bRet, false);
 
         CALL_BREAK(appendClip(*producer), bRet);
 
@@ -96,18 +86,8 @@ bool CEUSubVideoTrack::overwrite(const string &urlOrXml, int position)
 
     do
     {
-        FAIL_BREAK(urlOrXml.empty(), bRet, false);
-
-        shared_ptr<Mlt::Producer> producer;
-
-        if ('<' == urlOrXml[0])
-        {
-            producer.reset(new Mlt::Producer(CMltCtl::profile(), "xml-string", urlOrXml.c_str()));
-        }
-        else
-        {
-            producer.reset(new Mlt::Producer(CMltCtl::profile(), urlOrXml.c_str()));
-        }
+        shared_ptr<Mlt::Producer> producer = createProducer(profile, urlOrXml.c_str());
+        FAIL_BREAK(!producer, bRet, false);
 
         CALL_BREAK(overwrite(*producer, position), bRet);
 
@@ -212,8 +192,8 @@ bool CEUSubVideoTrack::trimClipIn(int clipIndex, int delta)
 
         int position = info->start + delta;
 
-        string xml = CEUTractor::XML(info->producer);
-        Mlt::Producer clip(CMltCtl::profile(), "xml-string", xml.c_str());
+        string xml = XML(info->producer);
+        Mlt::Producer clip(profile, "xml-string", xml.c_str());
         CALL_BREAK(clip.is_valid(), bRet);
 
         CALL_BREAK(!clip.set_in_and_out(info->frame_in + delta, info->frame_out), bRet);
@@ -249,8 +229,8 @@ bool CEUSubVideoTrack::trimClipOut(int clipIndex, int delta)
 
         int position = info->start;
 
-        string xml = CEUTractor::XML(info->producer);
-        Mlt::Producer clip(CMltCtl::profile(), "xml-string", xml.c_str());
+        string xml = XML(info->producer);
+        Mlt::Producer clip(profile, "xml-string", xml.c_str());
         CALL_BREAK(clip.is_valid(), bRet);
 
         CALL_BREAK(!clip.set_in_and_out(info->frame_in, info->frame_out - delta), bRet);
@@ -275,8 +255,8 @@ bool CEUSubVideoTrack::moveClip(int clipIndex, int position)
         shared_ptr<Mlt::ClipInfo> info(m_playlist->clip_info(clipIndex));
         FAIL_BREAK(!info, bRet, false);
 
-        string xml = CEUTractor::XML(info->producer);
-        Mlt::Producer clip(CMltCtl::profile(), "xml-string", xml.c_str());
+        string xml = XML(info->producer);
+        Mlt::Producer clip(profile, "xml-string", xml.c_str());
         CALL_BREAK(clip.is_valid(), bRet);
 
         clip.set_in_and_out(info->frame_in, info->frame_out);
@@ -303,7 +283,7 @@ bool CEUSubVideoTrack::splitClip(int clipIndex, int position)
         FAIL_BREAK(position <= info->start, bRet, false);
         FAIL_BREAK(position >= info->start + info->frame_count, bRet, false);
 
-        Mlt::Producer producer(CMltCtl::profile(), "xml-string", CEUTractor::XML(info->producer).c_str());
+        Mlt::Producer producer(profile, "xml-string", XML(info->producer).c_str());
         int in = info->frame_in;
         int out = info->frame_out;
         int duration = position - m_playlist->clip_start(clipIndex);
@@ -378,7 +358,7 @@ bool CEUSubVideoTrack::addFilter(Mlt::Producer &clip)
     {
         CHECK_BREAK(1 == clip.get_int(kHasDefaultFilter));
 
-        Mlt::Filter filter(CMltCtl::profile(), m_tractor.playerGPU()? "movit.rect" : "affine");
+        Mlt::Filter filter(profile, m_tractor.playerGPU()? "movit.rect" : "affine");
         CALL_BREAK(filter.is_valid(), bRet);
 
         filter.set(kDefaultSubVideoFilter, 1);

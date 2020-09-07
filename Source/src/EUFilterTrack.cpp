@@ -179,7 +179,7 @@ bool CEUFilterTrack::overwrite(Mlt::Filter& filter, int position)
 
             p->set_in_and_out(in, position - 1);
 
-            Mlt::Filter newFilter(CMltCtl::profile(), p->get("mlt_service"));
+            Mlt::Filter newFilter(profile, p->get("mlt_service"));
             CALL_BREAK(newFilter.is_valid(), bRet);
             CALL_BREAK(!newFilter.pass_values(*p, ""), bRet);
 
@@ -300,7 +300,7 @@ bool CEUFilterTrack::splitFilter(int filterIndex, int position)
 
         filter->set_in_and_out(in, position - 1);
 
-        Mlt::Filter newFilter(CMltCtl::profile(), filter->get("mlt_service"));
+        Mlt::Filter newFilter(profile, filter->get("mlt_service"));
         CALL_BREAK(newFilter.is_valid(), bRet);
         CALL_BREAK(!newFilter.pass_values(*filter, ""), bRet);
 
