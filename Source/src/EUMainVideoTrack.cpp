@@ -309,9 +309,9 @@ bool CEUMainVideoTrack::addTransition(int clipIndex, int length)
         FAIL_BREAK(!producer, bRet, false);
         producer->parent().set(kTransitionProperty, kDefaultTransition);
 
-        Mlt::Transition dissolve(profile, m_tractor.playerGPU()? "movit.luma_mix" : "luma");
+        Mlt::Transition dissolve(profile, playerGPU ? "movit.luma_mix" : "luma");
         Mlt::Transition crossFade(profile, "mix:-1");
-        if (!m_tractor.playerGPU())
+        if (!playerGPU)
         {
             dissolve.set("alpha_over", 1);
         }

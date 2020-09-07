@@ -2,7 +2,6 @@
 
 
 CEUTractor::CEUTractor()
-    : m_bPlayerGPU(false)
 {
 }
 
@@ -120,7 +119,7 @@ void CEUTractor::addSubTrack(shared_ptr<Mlt::Tractor> &tractor)
         mix.set("sum", 1);
         tractor->plant_transition(mix, 0, SubVideoTrack_0);
 
-        Mlt::Transition composite(profile, m_bPlayerGPU ? "movit.overlay" : "frei0r.cairoblend");
+        Mlt::Transition composite(profile, playerGPU ? "movit.overlay" : "frei0r.cairoblend");
         tractor->plant_transition(composite, MainVideoTrack, SubVideoTrack_0);
 
     } while (false);

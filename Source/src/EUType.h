@@ -49,6 +49,7 @@ typedef enum {
 
 extern Mlt::Profile profile;
 extern Mlt::Profile previewProfile;
+extern bool playerGPU;
 
 void setProfile(Mlt::Profile& profile, const char* profileName);
 shared_ptr<Mlt::Producer> createProducer(Mlt::Profile& profile, const char* urlOrXml);

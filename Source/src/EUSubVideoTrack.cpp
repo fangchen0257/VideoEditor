@@ -327,27 +327,27 @@ bool CEUSubVideoTrack::liftClip(int clipIndex)
 
 const char* CEUSubVideoTrack::fillProperty()
 {
-    return m_tractor.playerGPU()? "fill" : "transition.fill";
+    return playerGPU ? "fill" : "transition.fill";
 }
 
 const char* CEUSubVideoTrack::distortProperty()
 {
-    return m_tractor.playerGPU()? "distort" : "transition.distort";
+    return playerGPU ? "distort" : "transition.distort";
 }
 
 const char* CEUSubVideoTrack::rectProperty()
 {
-    return m_tractor.playerGPU()? "rect" : "transition.rect";
+    return playerGPU ? "rect" : "transition.rect";
 }
 
 const char* CEUSubVideoTrack::valignProperty()
 {
-    return m_tractor.playerGPU()? "valign" : "transition.valign";
+    return playerGPU ? "valign" : "transition.valign";
 }
 
 const char* CEUSubVideoTrack::halignProperty()
 {
-    return m_tractor.playerGPU()? "halign" : "transition.halign";
+    return playerGPU ? "halign" : "transition.halign";
 }
 
 bool CEUSubVideoTrack::addFilter(Mlt::Producer &clip)
@@ -358,7 +358,7 @@ bool CEUSubVideoTrack::addFilter(Mlt::Producer &clip)
     {
         CHECK_BREAK(1 == clip.get_int(kHasDefaultFilter));
 
-        Mlt::Filter filter(profile, m_tractor.playerGPU()? "movit.rect" : "affine");
+        Mlt::Filter filter(profile, playerGPU ? "movit.rect" : "affine");
         CALL_BREAK(filter.is_valid(), bRet);
 
         filter.set(kDefaultSubVideoFilter, 1);

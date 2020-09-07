@@ -12,8 +12,6 @@ public:
     virtual ~CEUTractor();
 
     bool Init();
-    bool playerGPU() { return m_bPlayerGPU; }
-    void setPlayerGPU(bool value) { m_bPlayerGPU = value; }
 
     shared_ptr<Mlt::Producer> producer() const { return shared_ptr<Mlt::Producer>(m_tractor); }
     shared_ptr<CEUMainVideoTrack> mainVideoTrack() { return shared_ptr<CEUMainVideoTrack>(new CEUMainVideoTrack(*this, m_playlist[MainVideoTrack])); }
@@ -37,6 +35,5 @@ private:
 private:
     shared_ptr<Mlt::Tractor> m_tractor;
     shared_ptr<Mlt::Playlist> m_playlist[MaxTrack];
-    bool m_bPlayerGPU;
 };
 

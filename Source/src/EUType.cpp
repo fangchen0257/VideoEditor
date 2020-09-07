@@ -6,6 +6,7 @@ const double kDefaultImageOutSecs = 4.0;
 
 Mlt::Profile profile;
 Mlt::Profile previewProfile;
+bool playerGPU = false;
 
 
 void setProfile(Mlt::Profile& profile, const char* profileName)
