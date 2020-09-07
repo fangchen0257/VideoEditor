@@ -3,6 +3,7 @@ import QtQuick.Controls 2.2
 import "../component" as QmlComponent
 
 Item {
+    id: root
     property int buttonWidth: 16
     property int buttonHeight: 16
 
@@ -13,8 +14,7 @@ Item {
     }
 
     Row {
-        anchors.left: parent.left
-        anchors.top: parent.top
+        anchors.fill: parent
         anchors.leftMargin: 20
         height: parent.height
         spacing: 16
@@ -184,6 +184,93 @@ Item {
             clrHover: "#ef5050"
             clrPress: "#ef5050"
             clrDisable: "#134b66"
+        }
+    }
+
+    Row {
+        layoutDirection: Qt.RightToLeft
+        anchors.top: parent.top
+        anchors.right: parent.right
+        height: parent.height
+        anchors.rightMargin: 20
+        spacing: 16
+
+        Row {
+            layoutDirection: Qt.RightToLeft
+            height: parent.height
+            spacing: 8
+
+            QmlComponent.StyleImageButton{
+                id: plusBtn
+                anchors.verticalCenter: parent.verticalCenter
+                width: buttonWidth
+                height: buttonHeight
+                bgNormal: "qrc:/res/plus_normal.png"
+                bgHover: "qrc:/res/plus_hover_pressed.png"
+                bgPressed: "qrc:/res/plus_hover_pressed.png"
+                bgDisabled: "qrc:/res/plus_disable.png"
+            }
+
+            Slider {
+                id: control
+                anchors.verticalCenter: parent.verticalCenter
+                padding: 0
+                from: 1
+                to: 20
+                value: 10
+                stepSize: 1
+
+                background: Rectangle {
+                    x: control.leftPadding
+                    y: control.topPadding + control.availableHeight / 2 - height / 2
+                    implicitWidth: 200
+                    implicitHeight: 4
+                    width: control.availableWidth
+                    height: implicitHeight
+                    radius: 2
+                    color: "#435274"
+
+                    Rectangle {
+                        width: control.visualPosition * parent.width
+                        height: parent.height
+                        color: "#0da5ef"
+                        radius: 2
+                    }
+                }
+
+                handle: Rectangle {
+                    x: control.leftPadding + control.visualPosition * (control.availableWidth - width)
+                    y: control.topPadding + control.availableHeight / 2 - height / 2
+                    implicitWidth: 12
+                    implicitHeight: 12
+                    radius: 6
+                    color: control.hovered?"#e44c4d":(control.pressed?"#e44c4d":"#0da5ef")
+                    border.width: 0
+
+                }
+            }
+
+            QmlComponent.StyleImageButton{
+                id: minusBtn
+                anchors.verticalCenter: parent.verticalCenter
+                width: buttonWidth
+                height: buttonHeight
+                bgNormal: "qrc:/res/minus_normal.png"
+                bgHover: "qrc:/res/minus_hover_pressed.png"
+                bgPressed: "qrc:/res/minus_hover_pressed.png"
+                bgDisabled: "qrc:/res/minus_disable.png"
+            }
+        }
+
+        QmlComponent.StyleImageButton{
+            id: autoScaleBtn
+            anchors.verticalCenter: parent.verticalCenter
+            width: 22
+            height: 16
+            bgNormal: "qrc:/res/auto_scale_normal.png"
+            bgHover: "qrc:/res/auto_scale_hover_pressed.png"
+            bgPressed: "qrc:/res/auto_scale_hover_pressed.png"
+            bgDisabled: "qrc:/res/auto_scale_disable.png"
         }
     }
 }

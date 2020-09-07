@@ -16,6 +16,7 @@ class CImagButton : public QPushButton
     Q_OBJECT
 public:
     CImagButton(QVector<QString> vecRes, int btnId = -1);
+    CImagButton(QString strRes, int btnId = -1);
     void SetImgRes(QVector<QString> vecRes);
 
 protected:
@@ -26,6 +27,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent* pEvent);
 
 private:
+    void init(QVector<QString> vecRes, int btnId);
     bool ptInRect(QPoint pt, QRect rect);
 
 signals:

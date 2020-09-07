@@ -12,6 +12,7 @@ public:
 
 protected:
     void paintEvent(QPaintEvent* pEvent);
+    void closeEvent(QCloseEvent *e);
 
 private:
     void Layout();

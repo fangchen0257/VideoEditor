@@ -40,6 +40,7 @@ protected:
     void initTexture();
     void initShader();
     void initGeometry();
+    void destroyTexture();
 private:
 
     QOpenGLShaderProgram mProgram;

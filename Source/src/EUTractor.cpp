@@ -2,80 +2,56 @@
 
 
 CEUTractor::CEUTractor()
-    : m_profile(kDefaultMltProfile)
+    : m_bPlayerGPU(false)
 {
-    m_bPlayerGPU = true;
-
-    open();
 }
 
 CEUTractor::~CEUTractor ()
 {
-    close();
 }
 
-shared_ptr<CEUPlaylist> CEUTractor::playlist(TrackIndex index)
+bool CEUTractor::Init()
 {
-    shared_ptr<CEUPlaylist> playlist;
+    bool bRet = true;
 
     do
     {
-        if (!m_tractor)
-        {
-            break;
-        }
+        m_tractor.reset(new Mlt::Tractor(CMltCtl::profile()));
+        addBackgroundTrack(m_tractor);
+        addMainTrack(m_tractor);
+        addSubTrack(m_tractor);
+        addAudioTrack(m_tractor);
 
-        playlist.reset(new CEUPlaylist(m_tractor, index));
-
-    } while (false);
-
-    return playlist;
-}
-
-int CEUTractor::open()
-{
-    int error = 0;
-
-    do
-    {
-        if (m_tractor)
-            break;
-
-        m_tractor.reset(new Mlt::Tractor(m_profile));
-
-        addBackgroundTrack();
-        addMainVideoTrack();
-        addSubVideoTrack();
-        addAudioTrack();
+        int nCacheSize = QThread::idealThreadCount() + MaxTrack * 2;
+        mlt_service_cache_set_size(nullptr, "producer_avformat", max(4, nCacheSize));
 
     } while (false);
 
-    return error;
+    return bRet;
 }
 
-void CEUTractor::close()
-{
-}
-
-int CEUTractor::getDuration()
+int CEUTractor::getLength()
 {
     int nDuration = 0;
 
     do
     {
-        if (!m_tractor)
+        CHECK_BREAK(!m_tractor);
+
+        int nFilterCount = m_tractor->filter_count();
+        for (int i = 0; i < nFilterCount; ++i)
         {
-            break;
+            shared_ptr<Mlt::Filter> filter(m_tractor->filter(i));
+            CHECK_CONTINUE(!filter || !filter->is_valid());
+            nDuration = max(nDuration, filter->get_out());
         }
 
         int nCount = m_tractor->count();
         for (int i = 0; i < nCount; ++i)
         {
             shared_ptr<Mlt::Producer> track(m_tractor->track(i));
-            if (track && track->is_valid())
-            {
-                nDuration = MAX(nDuration, track->get_length());
-            }
+            CHECK_CONTINUE(!track || !track->is_valid());
+            nDuration = max(nDuration, track->get_length());
         }
 
     } while (false);
@@ -83,135 +59,198 @@ int CEUTractor::getDuration()
     return nDuration;
 }
 
-void CEUTractor::addBackgroundTrack()
+void CEUTractor::onChanged()
+{
+    adjustBackgroundDuration();
+    adjustFilterOrder();
+}
+
+string CEUTractor::XML(Mlt::Service* service, bool withProfile, bool withMetadata)
+{
+    string strXML;
+
+    do
+    {
+        CHECK_BREAK(!service);
+
+        static const char* propertyName = "string";
+        Mlt::Consumer c(CMltCtl::profile(), "xml", propertyName);
+        Mlt::Service s(service->get_service());
+        CHECK_BREAK(!s.is_valid());
+
+        int ignore = s.get_int("ignore_points");
+        if (ignore)
+        {
+            s.set("ignore_points", 0);
+        }
+
+        c.set("time_format", "clock");
+        if (!withMetadata)
+        {
+            c.set("no_meta", 1);
+        }
+
+        c.set("no_profile", !withProfile);
+        c.set("store", "shotcut");
+        c.set("root", "");
+        c.connect(s);
+        c.start();
+        if (ignore)
+        {
+            s.set("ignore_points", ignore);
+        }
+        strXML = c.get(propertyName);
+
+    } while (false);
+
+    return strXML;
+}
+
+void CEUTractor::addBackgroundTrack(shared_ptr<Mlt::Tractor> &tractor)
 {
     do
     {
-        if (!m_tractor)
-        {
-            break;
-        }
+        CHECK_BREAK(!tractor->is_valid());
 
-        Mlt::Playlist playlist(m_profile);
-        playlist.set("id", kBackgroundTrackId);
-        Mlt::Producer producer(m_profile, "color:0");
+        m_playlist[BackgroundTrack].reset(new Mlt::Playlist(CMltCtl::profile()));
+        m_playlist[BackgroundTrack]->set("id", kBackgroundTrackId);
+        Mlt::Producer producer(CMltCtl::profile(), "color:0");
         producer.set("mlt_image_format", "rgb24a");
         producer.set("length", 1);
         producer.set("id", "black");
         // Allow mixing against frames produced by this producer.
         producer.set("set.test_audio", 0);
-        playlist.append(producer);
-        m_tractor->set_track(playlist, m_tractor->count());
+        m_playlist[BackgroundTrack]->append(producer);
+        tractor->set_track(*m_playlist[BackgroundTrack], BackgroundTrack);
 
     } while (false);
 }
 
-void CEUTractor::addAudioTrack()
+void CEUTractor::addMainTrack(shared_ptr<Mlt::Tractor> &tractor)
 {
     do
     {
-        if (!m_tractor)
-        {
-            break;
-        }
+        CHECK_BREAK(!tractor->is_valid());
 
-        Mlt::Playlist playlist(m_profile);
-        playlist.set(kAudioTrackProperty, 1);
-        playlist.set("hide", 1);
-        playlist.blank(0);
-        m_tractor->set_track(playlist, AudioTrack);
+        m_playlist[MainVideoTrack].reset(new Mlt::Playlist(CMltCtl::profile()));
+        m_playlist[MainVideoTrack]->set(kVideoTrackProperty, 1);
+        m_playlist[MainVideoTrack]->blank(0);
+        tractor->set_track(*m_playlist[MainVideoTrack], MainVideoTrack);
 
-        Mlt::Transition mix(m_profile, "mix");
+        Mlt::Transition mix(CMltCtl::profile(), "mix");
         mix.set("always_active", 1);
         mix.set("sum", 1);
-        m_tractor->plant_transition(mix, 0, AudioTrack);
+        tractor->plant_transition(mix, 0, MainVideoTrack);
 
     } while (false);
 }
 
-void CEUTractor::addMainVideoTrack()
+void CEUTractor::addSubTrack(shared_ptr<Mlt::Tractor> &tractor)
 {
     do
     {
-        if (!m_tractor)
-        {
-            break;
-        }
+        CHECK_BREAK(!tractor->is_valid());
 
-        Mlt::Playlist playlist(m_profile);
-        playlist.set(kVideoTrackProperty, 1);
-        playlist.blank(0);
-        m_tractor->set_track(playlist, MainTrack);
+        m_playlist[SubVideoTrack_0].reset(new Mlt::Playlist(CMltCtl::profile()));
+        m_playlist[SubVideoTrack_0]->set(kVideoTrackProperty, 1);
+        m_playlist[SubVideoTrack_0]->blank(0);
+        tractor->set_track(*m_playlist[SubVideoTrack_0], SubVideoTrack_0);
 
-        Mlt::Transition mix(m_profile, "mix");
+        Mlt::Transition mix(CMltCtl::profile(), "mix");
         mix.set("always_active", 1);
         mix.set("sum", 1);
-        m_tractor->plant_transition(mix, 0, MainTrack);
+        tractor->plant_transition(mix, 0, SubVideoTrack_0);
+
+        Mlt::Transition composite(CMltCtl::profile(), m_bPlayerGPU ? "movit.overlay" : "frei0r.cairoblend");
+        tractor->plant_transition(composite, MainVideoTrack, SubVideoTrack_0);
 
     } while (false);
 }
 
-void CEUTractor::addSubVideoTrack()
+void CEUTractor::addAudioTrack(shared_ptr<Mlt::Tractor> &tractor)
 {
     do
     {
-        if (!m_tractor)
-        {
-            break;
-        }
+        CHECK_BREAK(!tractor->is_valid());
 
-        Mlt::Playlist playlist(m_profile);
-        playlist.set(kVideoTrackProperty, 1);
-        playlist.blank(0);
-        m_tractor->set_track(playlist, SubTrack_0);
+        m_playlist[AudioTrack_0].reset( new Mlt::Playlist(CMltCtl::profile()));
+        m_playlist[AudioTrack_0]->set(kAudioTrackProperty, 1);
+        m_playlist[AudioTrack_0]->set("hide", 1);
+        m_playlist[AudioTrack_0]->blank(0);
+        tractor->set_track(*m_playlist[AudioTrack_0], AudioTrack_0);
 
-        Mlt::Transition mix(m_profile, "mix");
+        Mlt::Transition mix(CMltCtl::profile(), "mix");
         mix.set("always_active", 1);
         mix.set("sum", 1);
-        m_tractor->plant_transition(mix, 0, SubTrack_0);
-
-        Mlt::Transition composite(m_profile, m_bPlayerGPU ? "movit.overlay" : "frei0r.cairoblend");
-        m_tractor->plant_transition(composite, MainTrack, SubTrack_0);
+        tractor->plant_transition(mix, 0, AudioTrack_0);
 
     } while (false);
 }
 
-bool CEUTractor::isFiltered(Mlt::Producer* producer) const
+void CEUTractor::adjustBackgroundDuration()
 {
-    bool bFiltered = false;
-
     do
     {
-        if (!producer)
+        CHECK_BREAK(!m_tractor);
+
+        int length = getLength();
+
+        shared_ptr<Mlt::Producer> track(m_tractor->track(0));
+        CHECK_BREAK(!track || !track->is_valid());
+
+        shared_ptr<Mlt::Playlist> playlist(new Mlt::Playlist(*track));
+        CHECK_BREAK(playlist->count() <= 0);
+
+        shared_ptr<Mlt::Producer> clip(playlist->get_clip(0));
+        CHECK_BREAK(!clip);
+
+        int originalLength = clip->parent().get_length();
+        CHECK_BREAK(length == originalLength);
+
+        clip->parent().set("length", clip->parent().frames_to_time(length, mlt_time_clock));
+        clip->parent().set_in_and_out(0, length - 1);
+        clip->set("length", clip->parent().frames_to_time(length, mlt_time_clock));
+        clip->set_in_and_out(0, length - 1);
+        playlist->resize_clip(0, 0, length - 1);
+
+    } while (false);
+}
+
+void CEUTractor::adjustFilterOrder()
+{
+    do
+    {
+        CHECK_BREAK(!m_tractor);
+
+        map<int64_t, int> mapFilter;
+
+        int nFilterCount = m_tractor->filter_count();
+        for (int i = 0; i < nFilterCount; ++i)
         {
-            producer = m_tractor.get();
+            shared_ptr<Mlt::Filter> filter(m_tractor->filter(i));
+            CHECK_CONTINUE(!filter);
+
+            int priority = filter->get_int(kFilterPriority);
+            int in = filter->get_in();
+            mapFilter[(static_cast<int64_t>(priority) << 32) + in] = i;
         }
 
-        if (!producer || !producer->is_valid())
+        int i = 0;
+        for (auto it = mapFilter.begin(); it != mapFilter.end(); ++it, ++i)
         {
-            break;
-        }
+            CHECK_CONTINUE(it->second == i);
+            m_tractor->move_filter(it->second, i);
 
-        int nCount = producer->filter_count();
-        for (int i = 0; i < nCount; i++)
-        {
-            shared_ptr<Mlt::Filter> pFilter(producer->filter(i));
-            if (!pFilter || !pFilter->is_valid())
+            for (auto filter : mapFilter)
             {
-                continue;
-            }
-
-            if (pFilter->get_int("_loader"))
-            {
-                bFiltered = true;
+                CHECK_CONTINUE(filter.second != i);
+                filter.second = it->second;
                 break;
             }
+
+            it->second = i;
         }
 
     } while (false);
-
-    return bFiltered;
 }
-
-
 

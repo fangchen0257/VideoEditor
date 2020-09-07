@@ -4,32 +4,32 @@
 <context>
     <name>FilterNavigationBar</name>
     <message>
-        <location filename="qmls/filters/FilterNavigationBar.qml" line="32"/>
+        <location filename="qmls/filters/FilterNavigationBar.qml" line="36"/>
         <source>Video</source>
         <translation>视频</translation>
     </message>
     <message>
-        <location filename="qmls/filters/FilterNavigationBar.qml" line="43"/>
+        <location filename="qmls/filters/FilterNavigationBar.qml" line="47"/>
         <source>Photo</source>
         <translation>图片</translation>
     </message>
     <message>
-        <location filename="qmls/filters/FilterNavigationBar.qml" line="54"/>
+        <location filename="qmls/filters/FilterNavigationBar.qml" line="58"/>
         <source>Music</source>
         <translation>配乐</translation>
     </message>
     <message>
-        <location filename="qmls/filters/FilterNavigationBar.qml" line="65"/>
+        <location filename="qmls/filters/FilterNavigationBar.qml" line="69"/>
         <source>Trans</source>
         <translation>转场</translation>
     </message>
     <message>
-        <location filename="qmls/filters/FilterNavigationBar.qml" line="77"/>
+        <location filename="qmls/filters/FilterNavigationBar.qml" line="81"/>
         <source>Text</source>
         <translation>文字</translation>
     </message>
     <message>
-        <location filename="qmls/filters/FilterNavigationBar.qml" line="88"/>
+        <location filename="qmls/filters/FilterNavigationBar.qml" line="92"/>
         <source>Filter</source>
         <translation>滤镜</translation>
     </message>
@@ -58,14 +58,39 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="src/globalutinityobject.cpp" line="74"/>
+        <location filename="src/globalutinityobject.cpp" line="75"/>
         <source>select file</source>
-        <translation>选择文件</translation>
+        <translation>选择视频文件</translation>
     </message>
     <message>
-        <location filename="src/mainwin.cpp" line="41"/>
+        <location filename="src/mainwin.cpp" line="49"/>
         <source>Video Editor</source>
         <translation>视频编辑</translation>
+    </message>
+    <message>
+        <location filename="src/effectview.cpp" line="55"/>
+        <source>Video</source>
+        <translation>视频</translation>
+    </message>
+    <message>
+        <location filename="src/effectview.cpp" line="78"/>
+        <source>PIP</source>
+        <translation>画中画</translation>
+    </message>
+    <message>
+        <location filename="src/effectview.cpp" line="84"/>
+        <source>Filter</source>
+        <translation>滤镜</translation>
+    </message>
+    <message>
+        <location filename="src/effectview.cpp" line="90"/>
+        <source>Text</source>
+        <translation>文字</translation>
+    </message>
+    <message>
+        <location filename="src/effectview.cpp" line="96"/>
+        <source>Music</source>
+        <translation>配乐</translation>
     </message>
 </context>
 <context>

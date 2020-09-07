@@ -32,6 +32,8 @@ void QmlTypesRegister::setGlobalCariable(QQmlContext *context)
         }
 
         //全局辅助类
-        context->setContextProperty("_global_utinity_obj", new GolbalUtinityObject(this));
+
+        m_UtinityObject = new GolbalUtinityObject(this);
+        context->setContextProperty("_global_utinity_obj", m_UtinityObject);
     }while(false);
 }

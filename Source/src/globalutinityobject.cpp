@@ -33,7 +33,8 @@ void FrameRecvFun( void *szUserInfo, FrameData frame, mlt_position timePos )
 GolbalUtinityObject::GolbalUtinityObject(QObject *parent)
     : QObject(parent)
 {
-    m_MltCtrl.EUInit(this,FrameRecvFun,"");
+    m_MltCtrl.EUInit(this, FrameRecvFun);
+    m_EUTractor.Init();
 }
 
 void GolbalUtinityObject::setTimeCtrlRect(const int x, const int y, const int width, const int height)

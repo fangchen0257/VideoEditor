@@ -1,31 +1,48 @@
 #pragma once
 
 #include <Mlt.h>
+#include <qdebug.h>
+#include <QImage>
+#include <QThread>
+#include <string.h>
 #include <memory>
+#include <string>
+#include <list>
+#include <set>
+#include <map>
+#include <algorithm>
 
 using namespace std;
 
+#define CHECK_BREAK(c) if (c) { break; }
+#define CHECK_CONTINUE(c) if (c) { continue; }
+#define FAIL_BREAK(c, ret, err) if (c) { ret = err; break; }
+#define CALL_BREAK(call, ret) if (!(ret = call)) { break; }
 
-typedef enum {
-    PlaylistTrackType = 0,
-    BlackTrackType,
-    SilentTrackType,
-    AudioTrackType,
-    VideoTrackType
-} TrackType;
 
 typedef enum {
     BackgroundTrack = 0,
-    MainTrack,
-    SubTrack_0,
-    AudioTrack
+    MainVideoTrack,
+    SubVideoTrack_0,
+    AudioTrack_0,
+    MaxTrack
 } TrackIndex;
+
+typedef enum {
+    EffectFilter = 0,
+    TextFilter
+} FilterPriority;
 
 
 #define kAudioTrackProperty "xvideo:audio"
-#define kShotcutTransitionProperty "xvideo:transition"
+#define kTransitionProperty "xvideo:transition"
 #define kVideoTrackProperty "xvideo:video"
 
 #define kBackgroundTrackId "background"
+#define kFilterPriority "filterPriority"
+#define kHasDefaultFilter "hasDefaultFilter"
 
 #define kDefaultMltProfile "atsc_1080p_25"
+#define kDefaultTransition "lumaMix"
+#define kDefaultSubVideoFilter "defaultSubVideoFilter"
+

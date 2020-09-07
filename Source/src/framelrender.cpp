@@ -53,9 +53,7 @@ FrameRender::FrameRender()
 
 FrameRender::~FrameRender()
 {
-    safeDeleteTexture(mTexY);
-    safeDeleteTexture(mTexU);
-    safeDeleteTexture(mTexV);
+    destroyTexture();
 }
 
 void FrameRender::init()
@@ -139,6 +137,10 @@ void FrameRender::updateTextureInfo(int width, int height, int format)
 {
     m_w = width;
     m_h = height;
+
+
+    destroyTexture();
+    initTexture();
 
     //yuv420p
     mTexY->setSize(width, height);
@@ -227,4 +229,11 @@ void FrameRender::initGeometry()
     mViewMatrix.setToIdentity();
     mViewMatrix.lookAt(QVector3D(0.0f, 0.0f, 1.001f), QVector3D(0.0f, 0.0f, -5.0f), QVector3D(0.0f, 1.0f, 0.0f));
     mModelMatrix.setToIdentity();
+}
+
+void FrameRender::destroyTexture()
+{
+    safeDeleteTexture(mTexY);
+    safeDeleteTexture(mTexU);
+    safeDeleteTexture(mTexV);
 }

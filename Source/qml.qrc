@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>qmls/widgets/MainWindow.qml</file>
         <file>qmls/widgets/WindowTitle.qml</file>
         <file>res/close_hover.png</file>
         <file>res/close_normal.png</file>
@@ -81,7 +80,6 @@
         <file>qmls/play/play.js</file>
         <file>qmls/component/PlayTimeEdit.qml</file>
         <file>qmls/component/DurationSplitItem.qml</file>
-        <file>qmls/widgets/GlobalMousemonitor.qml</file>
         <file>qmls/timeline/TrackHeader.qml</file>
         <file>res/cut_zoom_disable.png</file>
         <file>res/cut_zoom_hover_pressed.png</file>
@@ -149,5 +147,41 @@
         <file>res/videodel.png</file>
         <file>res/videodel_h.png</file>
         <file>res/drag.png</file>
+        <file>qmls/widgets/GlobalMousemonitor.qml</file>
+        <file>qmls/widgets/MainWindow.qml</file>
+        <file>res/StyleSheet.css</file>
+        <file>res/audio_volume_high.png</file>
+        <file>res/audio_volume_high_diasble.png</file>
+        <file>res/audio_volume_high_hover.png</file>
+        <file>res/audio_volume_high_pressed.png</file>
+        <file>res/audio_volume_mute.png</file>
+        <file>res/audio_volume_mute_diasble.png</file>
+        <file>res/audio_volume_mute_hover.png</file>
+        <file>res/audio_volume_mute_pressed.png</file>
+        <file>res/layer_visible_off.png</file>
+        <file>res/layer_visible_off_disable.png</file>
+        <file>res/layer_visible_off_hover.png</file>
+        <file>res/layer_visible_off_pressed.png</file>
+        <file>res/layer_visible_on.png</file>
+        <file>res/layer_visible_on_disable.png</file>
+        <file>res/layer_visible_on_hover.png</file>
+        <file>res/layer_visible_on_pressed.png</file>
+        <file>res/locked.png</file>
+        <file>res/locked_clicked.png</file>
+        <file>res/locked_disable.png</file>
+        <file>res/locked_hover.png</file>
+        <file>res/unlock.png</file>
+        <file>res/unlock_clicked.png</file>
+        <file>res/unlock_disable.png</file>
+        <file>res/unlock_hover.png</file>
+        <file>res/video_icon.png</file>
+        <file>res/filter_icon.png</file>
+        <file>res/music_icon.png</file>
+        <file>res/pip_icon.png</file>
+        <file>res/text_icon.png</file>
+        <file>res/auto_scale_clicked.png</file>
+        <file>res/auto_scale_disable.png</file>
+        <file>res/auto_scale_hover_pressed.png</file>
+        <file>res/auto_scale_normal.png</file>
     </qresource>
 </RCC>

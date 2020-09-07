@@ -27,6 +27,11 @@ void CMainWin::paintEvent(QPaintEvent *pEvent)
     paint.drawRect(rt);
 }
 
+void CMainWin::closeEvent(QCloseEvent *e)
+{
+    QmlTypesRegister::instance().UtinityObject()->stopPlay();
+}
+
 void CMainWin::Layout()
 {
     do
@@ -63,7 +68,7 @@ void CMainWin::Layout()
         pSplitter->addWidget(pTimeLine);
 
         QList<int> listSize;
-        listSize << 550 << 150;
+        listSize << 400 << 300;
         pSplitter->setSizes(listSize);
     } while(0);
 }

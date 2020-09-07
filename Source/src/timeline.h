@@ -2,6 +2,7 @@
 #define CTIMELINE_H
 
 #include <QWidget>
+#include "effectview.h"
 class CTimeLine : public QWidget
 {
     Q_OBJECT
@@ -10,6 +11,9 @@ public:
 
 private:
     void Layout();
+
+private:
+    CEffectView* m_pEffectView;
 };
 
 #endif // CTIMELINE_H

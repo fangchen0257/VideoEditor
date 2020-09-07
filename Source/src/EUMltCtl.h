@@ -1,7 +1,7 @@
 #ifndef MLTCONTROLLER_H
 #define MLTCONTROLLER_H
 
-#include <Mlt.h>
+#include "EUType.h"
 
 struct FrameData
 {
@@ -15,32 +15,37 @@ class CMltCtl
 {
     typedef void (*MltCtlRecvFrameFun)( void *szUserInfo, FrameData frame, mlt_position timePos );
 public:
-    //static CMltCtl *Instance();
     CMltCtl();
     virtual ~CMltCtl ();
 
-    void EUInit( void *szUser, MltCtlRecvFrameFun szFun, const char* profile = "" );
-    int EUOpen (const char* url);
-    int EUSetProducer(Mlt::Producer* producer);
-    void EUClose ();
+    static Mlt::Profile& profile() { return m_profile; }
+    static void setProfile(const string &profile_name) { m_profileName = profile_name; }
+
+    void EUInit( void *szUser, MltCtlRecvFrameFun szFun);
+    int EUOpen(const char* url);
+    int EUSetProducer(shared_ptr<Mlt::Producer> producer);
+    void EUClose();
     
-    void EUPlay ();
-    void EUPause ();
+    void EUPlay();
+    void EUPause();
     void EUStop();
     
     void ReleaseFrame(FrameData frame);
 
-    void EUSeek (int pos );
-    void EUSetVolume (double volume);
+    void EUSeek(int duration);
+    void EUSeekToPos(int position);
+    void EUSetVolume(double volume);
     
     int EUGetDuration();
     
     int Open();
 
 private:
-    Mlt::Profile* m_profile;
-    Mlt::Producer* m_producer;
-    Mlt::Consumer* m_consumer;
+    static Mlt::Profile m_profile;
+    static string m_profileName;
+
+    shared_ptr<Mlt::Producer> m_producer;
+    shared_ptr<Mlt::Consumer> m_consumer;
     
     void *m_userInfo;
     MltCtlRecvFrameFun m_recvFrameFun;

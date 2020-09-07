@@ -5,6 +5,7 @@
 #define MINIZIM_HEIGHT 150
 CTimeLine::CTimeLine(QWidget *parent)
     :QWidget(parent)
+    ,m_pEffectView(nullptr)
 {
     Layout();
 }
@@ -27,8 +28,8 @@ void CTimeLine::Layout()
         pOperWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
         pVboxMain->addWidget(pOperWidget);
 
-        QTableWidget* pTableWidget = new QTableWidget(3,3);
-        if (nullptr == pTableWidget) break;
-        pVboxMain->addWidget(pTableWidget);
+        m_pEffectView = new CEffectView(ROW_CNT-1,COL_CNT);
+        if (nullptr == m_pEffectView) break;
+        pVboxMain->addWidget(m_pEffectView);
     } while(0);
 }

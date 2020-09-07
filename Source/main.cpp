@@ -86,7 +86,7 @@ void SetCurExecPath()
     QCoreApplication::addLibraryPath(strPath);
 }
 
-void installTranslator(QGuiApplication* pApp)
+void installTranslator(QApplication* pApp)
 {
     do
     {
@@ -94,14 +94,30 @@ void installTranslator(QGuiApplication* pApp)
 
         QTranslator* pTrans = new QTranslator;
         if (nullptr == pTrans) break;
-        pTrans->load("./QtXVideoEdit_zh_CN.qm");
+        pTrans->load("../Resource/QtXVideoEdit_zh_CN.qm");
         pApp->installTranslator(pTrans);
+    } while(0);
+}
+
+void resetStyleSheet(QApplication* pApp)
+{
+    do
+    {
+        if (nullptr == pApp) break;
+        QString strStyleSheet = QString("*{font-size: 14px; font-family:Segoe UI;}\r\n");
+
+        QFile file(":/res/StyleSheet.css");
+        if (file.open(QIODevice::ReadOnly|QIODevice::Text))
+        {
+            QByteArray strStyle = file.readAll();
+            strStyleSheet += strStyle;
+        }
+        pApp->setStyleSheet(strStyleSheet);
     } while(0);
 }
 
 int main(int argc, char *argv[])
 {
-    //qInstallMessageHandler(QtMessageLogHandler);
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication app(argc, argv);
 
@@ -111,23 +127,11 @@ int main(int argc, char *argv[])
     }
     SetCurExecPath();
     installTranslator(&app);
+    resetStyleSheet(&app);
 
     CMainWin mainw;
     mainw.setFixedSize(1280,768);
     mainw.show();
-
-#if 0
-    QmlTypesRegister::instance().RegisterCommonType();
-    QQmlApplicationEngine engine;
-    QmlTypesRegister::instance().setGlobalCariable(engine.rootContext());
-    const QUrl url(QStringLiteral("qrc:/qmls/widgets/MainWindow.qml"));
-    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
-                     &app, [url](QObject *obj, const QUrl &objUrl) {
-        if (!obj && url == objUrl)
-            QCoreApplication::exit(-1);
-    }, Qt::QueuedConnection);
-    engine.load(url);
-#endif
 
     return app.exec();
 }

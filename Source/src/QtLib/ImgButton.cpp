@@ -5,14 +5,17 @@
 
 CImagButton::CImagButton(QVector<QString> vecRes, int btnId)
 {
-    m_bindId = btnId;
-    m_btnStatus = BTN_NORMAL;
-    if (vecRes.size() == BTN_CNT)
+    init(vecRes, btnId);
+}
+
+CImagButton::CImagButton(QString strRes, int btnId)
+{
+    QVector<QString> vecRes;
+    for (int i=0; i<BTN_CNT; ++i)
     {
-        m_vecImgRes = vecRes;
-        QPixmap pm(m_vecImgRes[BTN_NORMAL]);
-        setFixedSize(pm.size());
+        vecRes.push_back(strRes);
     }
+    init(vecRes, btnId);
 }
 
 void CImagButton::SetImgRes(QVector<QString> vecRes)
@@ -73,6 +76,18 @@ void CImagButton::mouseReleaseEvent(QMouseEvent *pEvent)
     }
 
     return QPushButton::mouseReleaseEvent(pEvent);
+}
+
+void CImagButton::init(QVector<QString> vecRes, int btnId)
+{
+    m_bindId = btnId;
+    m_btnStatus = BTN_NORMAL;
+    if (vecRes.size() == BTN_CNT)
+    {
+        m_vecImgRes = vecRes;
+        QPixmap pm(m_vecImgRes[BTN_NORMAL]);
+        setFixedSize(pm.size());
+    }
 }
 
 bool CImagButton::ptInRect(QPoint pt, QRect rect)

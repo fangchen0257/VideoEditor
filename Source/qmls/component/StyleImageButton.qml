@@ -23,5 +23,4 @@ Button{
             root.hovered ? (root.pressed ? bgPressed : bgHover) : bgNormal
         }
     }
-
 }

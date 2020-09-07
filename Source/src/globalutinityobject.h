@@ -9,6 +9,7 @@
 #include <QPoint>
 
 #include "EUMltCtl.h"
+#include "EUTractor.h"
 
 class GolbalUtinityObject : public QObject
 {
@@ -31,8 +32,9 @@ signals:
     void initVideoDuration(const int duration);
     void setVideoDuration(const int duration);
 private:
-    QRect   time_ctrl_rect_;
+    QRect time_ctrl_rect_;
     CMltCtl m_MltCtrl;
+    CEUTractor m_EUTractor;
     bool m_bPlaying = false;
 };
 

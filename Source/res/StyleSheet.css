@@ -1,0 +1,59 @@
+/***************
+ * padding: [top right bottom left][top_bottom left_right]
+ * border: width line_style color
+***************/
+
+
+/*QScrollBar*/
+QScrollBar:vertical
+{
+    width:10px;
+    background:  #212735;
+    margin: 0px, 0px, 0px, 0px;
+    padding-top: 0px;
+    padding-bottom:0px;
+}
+
+QScrollBar::handle:vertical
+{
+    width:10px;
+    background: #0da5ef;
+    min-height: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar::add-page:vertical,QScrollBar::sub-page:vertical
+{
+    background: #212735;
+}
+QScrollBar::up-arrow:vertical,QScrollBar::down-arrow:vertical
+{
+    border :none;
+    background: transparent;
+}
+
+QScrollBar::handle:vertical:hover
+{
+    background:#21c8fb;
+}
+
+QScrollBar::handle:vertical:pressed
+{
+    background:#21c8fb;
+}
+
+QScrollBar::add-line:vertical /*Èý½Ç¼ýÍ·*/
+{
+    border : none;
+    background: none;
+    subcontrol-position: -180;
+    width: 0px;
+}
+
+QScrollBar::sub-line:vertical
+{
+    border : none;
+    background: none;
+    subcontrol-position: -180;
+    width: 0px;
+}

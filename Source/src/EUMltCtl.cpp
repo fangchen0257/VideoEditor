@@ -1,30 +1,13 @@
 #include "EUMltCtl.h"
-#include <QDebug>
+
+Mlt::Profile CMltCtl::m_profile(kDefaultMltProfile);
+string CMltCtl::m_profileName = kDefaultMltProfile;
 
 CMltCtl::CMltCtl()
-: m_profile (nullptr)
-, m_producer (nullptr)
-, m_consumer (nullptr)
-, m_userInfo(nullptr)
-, m_recvFrameFun(nullptr)
+    : m_userInfo(nullptr)
+    , m_recvFrameFun(nullptr)
 {
 }
-
-/*
-
-CMltCtl *CMltCtl::Instance()
-{
-    static CMltCtl *anInstance = NULL;
-    
-    if( NULL == anInstance )
-    {
-        anInstance = new CMltCtl();
-    }
-    
-    return anInstance;
-}
-
-*/
 
 CMltCtl::~CMltCtl ()
 {
@@ -35,12 +18,12 @@ CMltCtl::~CMltCtl ()
 // MLT consumer-frame-show event handler
 void CMltCtl::on_frame_show (mlt_consumer, void* userInfo, mlt_frame frame_ptr)
 {
-    CMltCtl *szMltCtl = static_cast<CMltCtl*> (userInfo);
-    Mlt::Frame* frame = new Mlt::Frame (frame_ptr);
+    CMltCtl *szMltCtl = static_cast<CMltCtl*>(userInfo);
+    Mlt::Frame* frame = new Mlt::Frame(frame_ptr);
 
     mlt_image_format ft = mlt_image_yuv420p;
-    int w,h;
-    unsigned char *t =frame->get_image(ft,w,h);
+    int w = 0, h = 0;
+    unsigned char *t =frame->get_image(ft, w, h);
 
     FrameData data;
     data.frame = frame;
@@ -54,28 +37,26 @@ void CMltCtl::on_frame_show (mlt_consumer, void* userInfo, mlt_frame frame_ptr)
     }
 }
 
-void CMltCtl::frameReceived(FrameData frame, mlt_position timePos )
+void CMltCtl::frameReceived(FrameData frame, mlt_position timePos)
 {
-    if( m_recvFrameFun )
+    do
     {
-        mlt_position curPlayPos = 0;
-        
-        if( m_profile )
+        CHECK_BREAK(!m_recvFrameFun);
+
+        mlt_position curPlayPos = static_cast<mlt_position>(timePos / m_profile.fps());
+        if (curPlayPos * m_profile.fps() < timePos)
         {
-            curPlayPos = static_cast<mlt_position>(timePos / m_profile->fps());
-            if (curPlayPos *  m_profile->fps() < timePos)
-                ++curPlayPos;
+            ++curPlayPos;
         }
-        
-        m_recvFrameFun( m_userInfo, frame, curPlayPos );
-    }
+
+        m_recvFrameFun(m_userInfo, frame, curPlayPos);
+
+    } while (false);
 }
 
-void CMltCtl::EUInit ( void *szUser, MltCtlRecvFrameFun szFun, const char* profile )
+void CMltCtl::EUInit (void *szUser, MltCtlRecvFrameFun szFun)
 {
     Mlt::Factory::init();
-    m_profile = new Mlt::Profile( profile );
-//    m_profile->set_explicit(false);
     m_userInfo = szUser;
     m_recvFrameFun = szFun;
 }
@@ -84,31 +65,27 @@ int CMltCtl::EUOpen (const char* url)
 {
     int error = 0;
 
-    EUClose ();
-    
-    m_producer = new Mlt::Producer (*m_profile, url);
-    
-    error = Open();
+    do
+    {
+        EUClose ();
+        m_producer.reset(new Mlt::Producer(m_profile, url));
+        error = Open();
+
+    } while (false);
     
     return error;
 }
 
-int CMltCtl::EUSetProducer(Mlt::Producer* producer)
+int CMltCtl::EUSetProducer(shared_ptr<Mlt::Producer> producer)
 {
     int error = 0;
 
     do
     {
+        CHECK_BREAK(m_producer == producer);
+
         EUClose();
-
-        if (!producer)
-        {
-            error = 1;
-            break;
-        }
-
-        m_producer = new Mlt::Producer(*producer);
-
+        m_producer = producer;
         error = Open();
 
     } while (false);
@@ -123,17 +100,8 @@ void CMltCtl::EUClose ()
         m_consumer->stop();
     }
 
-    if (m_consumer)
-    {
-        delete m_consumer;
-        m_consumer = nullptr;
-    }
-    
-    if (m_producer)
-    {
-        delete m_producer;
-        m_producer = nullptr;
-    }
+    m_consumer.reset();
+    m_producer.reset();
 }
 
 void CMltCtl::EUPlay ()
@@ -187,38 +155,56 @@ void CMltCtl::EUSetVolume (double volume)
     }
 }
 
-void CMltCtl::EUSeek (int pos )
+void CMltCtl::EUSeek (int duration )
 {
-    if( m_producer )
+    do
     {
+        CHECK_BREAK(!m_producer);
+
+        int position = static_cast<int>(duration * m_profile.fps());
+        EUSeekToPos(position);
+
+    } while (false);
+}
+
+void CMltCtl::EUSeekToPos ( int position )
+{
+    do
+    {
+        CHECK_BREAK(!m_producer);
+
         double fSpeed = m_producer->get_speed();
-        
         m_producer->set_speed( 0 );
-        m_producer->seek( static_cast<int>(pos * m_profile->fps()) );
+        m_producer->seek( position );
         m_producer->set_speed( fSpeed );
-        
-        if( m_consumer && m_consumer->is_valid() )
+
+        CHECK_BREAK( !m_consumer || !m_consumer->is_valid() );
+
+        if( m_consumer->is_stopped() )
         {
-            if( m_consumer->is_stopped() )
-            {
-                m_consumer->start();
-            }
-            else
-            {
-                m_consumer->purge();
-            }
+            m_consumer->start();
         }
-    }
+        else
+        {
+            m_consumer->purge();
+        }
+
+    } while (false);
 }
 
 int CMltCtl::EUGetDuration()
 {
-    if( m_producer )
+    int duration = 0;
+
+    do
     {
-        return static_cast<int>(m_producer->get_length() / m_profile->fps());
-    }
-    
-    return 0;
+        CHECK_BREAK(!m_producer);
+
+        duration = static_cast<int>(m_producer->get_length() / m_profile.fps());
+
+    } while (false);
+
+    return duration;
 }
 
 int CMltCtl::Open()
@@ -227,41 +213,52 @@ int CMltCtl::Open()
 
     do
     {
-        if (!m_producer)
-        {
-            break;
-        }
+        CHECK_BREAK(!m_producer);
 
         if (!m_producer->is_valid ())
         {
             error = 1;
-            delete m_producer;
-            m_producer = nullptr;
+            m_producer.reset();
             break;
         }
 
 #ifdef _MSC_VER
-        m_consumer = new Mlt::Consumer (*m_profile, "sdl");
+        m_consumer.reset(Mlt::Consumer (m_profile, "sdl"));
 #else
-        int w = m_producer->get_int("width");
-        int h = m_producer->get_int("height");
+        mlt_service_type type = m_producer->type();
+        if (producer_type == type)
+        {
+            m_profile.from_producer(*m_producer);
 
-        float ratio = 1.0f *w/h;
-        h = (h >> 4) << 4 ;
-        w = (int(ratio * h)>>4)  <<4 ;
+            int w = m_producer->get_int("width");
+            int h = m_producer->get_int("height");
 
-        m_profile->set_width(w);
-        m_profile->set_height(h);
+            float ratio = 1.0f *w/h;
+            h = (h >> 4) << 4 ;
+            w = (int(ratio * h)>>4)  <<4 ;
 
-        m_consumer = new Mlt::Consumer (*m_profile, "sdl_audio");
+            m_profile.set_width(w);
+            m_profile.set_height(h);
+        }
+        else
+        {
+            Mlt::Profile tmp(m_profileName.c_str());
+            m_profile.set_colorspace(tmp.colorspace());
+            m_profile.set_frame_rate(tmp.frame_rate_num(), tmp.frame_rate_den());
+            m_profile.set_width(tmp.width());
+            m_profile.set_height(tmp.height());
+            m_profile.set_progressive(tmp.progressive());
+            m_profile.set_sample_aspect(tmp.sample_aspect_num(), tmp.sample_aspect_den());
+            m_profile.set_display_aspect(tmp.display_aspect_num(), tmp.display_aspect_den());
+        }
+
+        m_consumer.reset(new Mlt::Consumer(m_profile, "sdl_audio"));
 #endif
         if (!m_consumer->is_valid ())
         {
             error = 2;
-            delete m_consumer;
-            m_consumer = nullptr;
-            delete m_producer;
-            m_producer = nullptr;
+            m_consumer.reset();
+            m_producer.reset();
             break;
         }
 

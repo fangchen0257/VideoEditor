@@ -14,18 +14,25 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    src/QtLib/ImgButton.cpp \
-    src/QtLib/winfrmtitle.cpp \
         src/globalutinityobject.cpp \
-    src/mainwin.cpp \
         src/qmltypesregister.cpp \
-    src/timeline.cpp \
         src\framelrender.cpp \
         src\frameplayview.cpp \
         main.cpp \
     src/EUMltCtl.cpp \
-    src/EUPlaylist.cpp \
-    src/EUTractor.cpp
+    src/EUTractor.cpp \
+    src/QtLib/ImgButton.cpp \
+    src/QtLib/winfrmtitle.cpp \
+    src/mainwin.cpp \
+    src/timeline.cpp \
+    src/EUAudioTrack.cpp \
+    src/EUTrack.cpp \
+    src/EUMainVideoTrack.cpp \
+    src/EUSubVideoTrack.cpp \
+    src/EUFilterTrack.cpp \
+    src/effectview.cpp \
+    src/effecthorizonheader.cpp \
+    src/QtLib/box.cpp
 
 RESOURCES += qml.qrc \
     shaders.qrc
@@ -46,18 +53,25 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    src/QtLib/ImgButton.h \
-    src/QtLib/winfrmtitle.h \
     src/globalutinityobject.h \
-    src/mainwin.h \
     src/qmltypesregister.h \
-    src/timeline.h \
     src\framelrender.h \
     src\frameplayview.h \
     src/EUMltCtl.h \
-    src/EUPlaylist.h \
     src/EUTractor.h \
-    src/EUType.h
+    src/EUType.h \
+    src/QtLib/ImgButton.h \
+    src/QtLib/winfrmtitle.h \
+    src/mainwin.h \
+    src/timeline.h \
+    src/EUAudioTrack.h \
+    src/EUTrack.h \
+    src/EUMainVideoTrack.h \
+    src/EUSubVideoTrack.h \
+    src/EUFilterTrack.h \
+    src/effectview.h \
+    src/effecthorizonheader.h \
+    src/QtLib/box.h
 
 QT += widgets
 
@@ -68,4 +82,12 @@ LIBS += -L$$PWD/third/lib -lmlt++ -lmlt
 
 DISTFILES += \
     QtXVideoEdit_zh_CN.ts
+
+CONFIG(debug,debug|release){
+DESTDIR = ./../Output/Debug
+}
+
+CONFIG(release,debug|release){
+DESTDIR = ./../Output/Release
+}
 
