@@ -1,7 +1,10 @@
 #include "box.h"
+#include <qpainter.h>
 
 CBox::CBox(bool bIsVbox)
 {
+    m_bDrawFrm = false;
+
     if (bIsVbox)
     {
         m_pBox = new QVBoxLayout;
@@ -85,4 +88,25 @@ void CBox::AddSpacing(int spacing)
     {
         m_pBox->addSpacing(spacing);
     }
+}
+
+void CBox::SetDrawFrame(bool bDrawFrame)
+{
+    m_bDrawFrm = bDrawFrame;
+    update();
+}
+
+void CBox::paintEvent(QPaintEvent *pEvent)
+{
+    if (!m_bDrawFrm){
+        return QWidget::paintEvent(pEvent);
+    }
+
+    QPainter paint(this);
+    paint.setPen(Qt::red);
+    paint.setBrush(Qt::NoBrush);
+
+    QRect rtDraw = rect();
+    rtDraw.adjust(0,0,-1,-1);
+    paint.drawRect(rtDraw);
 }

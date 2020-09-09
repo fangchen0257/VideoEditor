@@ -8,6 +8,7 @@
 CEffectView::CEffectView(QWidget* parent)
     :QTableWidget(parent)
     ,m_pEffectHeader(nullptr)
+    ,m_pHboxTrackVideo(nullptr)
 {
     Layout();
 }
@@ -44,6 +45,8 @@ void CEffectView::Layout()
         setStyleSheet("QTableWidget {border:0px; background-color: #212735; alternate-background-color: #252b39;}");
 
         InitFirstColumn();
+        InitTrackContainer();
+        ResetTrack();
     } while(0);
 }
 
@@ -145,4 +148,28 @@ CBox *CEffectView::InitCellItem(QString strIcon, QString strText, QVector<QStrin
     } while(0);
 
     return pCell;
+}
+
+void CEffectView::InitTrackContainer()
+{
+    do
+    {
+        m_pHboxTrackVideo = new CBox(false);
+        if (nullptr == m_pHboxTrackVideo) break;
+        m_pHboxTrackVideo->SetDrawFrame(true);
+        m_pHboxTrackVideo->SetMargins(0,5,0,0);
+        setCellWidget(ROW_VIDEO,1,m_pHboxTrackVideo);
+    } while(0);
+}
+
+void CEffectView::ResetTrack()
+{
+    do
+    {
+        if (nullptr == m_pHboxTrackVideo) break;
+
+        CTrackItem* pTrackItem = new CTrackItem(ITEM_VIDEO, ":/res/photo_hover_pressed.png", "a test video", m_pHboxTrackVideo);
+        if (nullptr == pTrackItem) break;
+        pTrackItem->move(0,5);
+    } while(0);
 }

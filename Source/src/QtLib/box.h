@@ -17,8 +17,13 @@ public:
     void SetMargins(int l, int t, int r, int b);
     void SetSpacing(int spacing);
     void AddSpacing(int spacing);
+    void SetDrawFrame(bool bDrawFrame);
+
+protected:
+    void paintEvent(QPaintEvent* pEvent);
 
 private:
+    bool m_bDrawFrm;
     QBoxLayout* m_pBox;
 };
 

@@ -1,12 +1,11 @@
 #include "EUType.h"
 
 
-const int kMaxImageDurationSecs = 3600 * 4;
-const double kDefaultImageOutSecs = 4.0;
-
 Mlt::Profile profile;
 Mlt::Profile previewProfile;
+
 bool playerGPU = false;
+int drawMethod = 0;
 
 
 void setProfile(Mlt::Profile& profile, const char* profileName)
@@ -21,33 +20,16 @@ void setProfile(Mlt::Profile& profile, const char* profileName)
     profile.set_display_aspect(tmp.display_aspect_num(), tmp.display_aspect_den());
 }
 
-shared_ptr<Mlt::Producer> createProducer(Mlt::Profile& profile, const char* urlOrXml)
+void profileFromProducer(Mlt::Profile& profile, const char* urlOrXml)
 {
-    shared_ptr<Mlt::Producer> producer;
-
     do
     {
-        CHECK_BREAK(!urlOrXml || strlen(urlOrXml) <= 0);
-
-        if ('<' == urlOrXml[0])
-        {
-            producer.reset(new Mlt::Producer(profile, "xml-string", urlOrXml));
-            break;
-        }
-
-        producer.reset(new Mlt::Producer(profile, urlOrXml));
-        CHECK_BREAK(!producer || !producer->is_valid());
-
-        string serviceName = producer->get("mlt_service");
-        CHECK_BREAK(("pixbuf" != serviceName) && ("qimage" != serviceName));
-
-        producer->set("ttl", 1);
-        producer->set("length", producer->frames_to_time(qRound(profile.fps() * kMaxImageDurationSecs), mlt_time_clock));
-        producer->set("out", qRound(profile.fps() * kDefaultImageOutSecs) - 1);
+        Mlt::Producer producer(profile, urlOrXml);
+        profile.from_producer(producer);
+        profile.set_width(coerceMultiple(profile.width()));
+        profile.set_height(coerceMultiple(profile.height()));
 
     } while (false);
-
-    return producer;
 }
 
 string XML(Mlt::Service* service, bool withProfile, bool withMetadata)
@@ -91,7 +73,7 @@ string XML(Mlt::Service* service, bool withProfile, bool withMetadata)
     return strXML;
 }
 
-QImage IMAGE(Mlt::Frame* frame, int width, int height)
+QImage image(Mlt::Frame* frame, int width, int height)
 {
     QImage img;
 
@@ -129,19 +111,8 @@ QImage IMAGE(Mlt::Frame* frame, int width, int height)
     return img;
 }
 
-QImage IMAGE(Mlt::Producer* producer, int width, int height, int frameNumber)
+int coerceMultiple(int value, int multiple)
 {
-    QImage img;
-
-    do
-    {
-        CHECK_BREAK(!producer);
-
-        CHECK_BREAK(!!producer->seek(frameNumber));
-        img = IMAGE(producer->get_frame(), width, height);
-
-    } while (false);
-
-    return img;
+    return (value + multiple - 1) / multiple * multiple;
 }
 

@@ -183,5 +183,11 @@
         <file>res/auto_scale_disable.png</file>
         <file>res/auto_scale_hover_pressed.png</file>
         <file>res/auto_scale_normal.png</file>
+        <file>res/volume_hover.png</file>
+        <file>res/no_volume_hover.png</file>
+        <file>res/no_volume_normal.png</file>
+        <file>res/trim_left.png</file>
+        <file>res/trim_right.png</file>
+        <file>res/clip_trim_mouse.png</file>
     </qresource>
 </RCC>

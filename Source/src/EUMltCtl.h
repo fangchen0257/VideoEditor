@@ -9,6 +9,7 @@ struct FrameData
     unsigned char *image;
     int width;
     int height;
+    int pos;
 };
 
 class CMltCtl
@@ -28,16 +29,20 @@ public:
     void EUStop();
     
     void ReleaseFrame(FrameData frame);
+    void refreshConsumer(bool scrubAudio = false);
 
     void EUSeek(int duration);
     void EUSeekToPos(int position);
     void EUSetVolume(double volume);
     
     int EUGetDuration();
-    
+    int EUGetLength();
+    double EUGetFps();
+
     int Open();
 
 private:
+    Mlt::Profile m_profile;
 
     shared_ptr<Mlt::Producer> m_producer;
     shared_ptr<Mlt::Consumer> m_consumer;

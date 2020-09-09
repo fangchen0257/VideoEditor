@@ -1,5 +1,6 @@
 #pragma once
 #include "EUType.h"
+#include "EUProducer.h"
 
 
 class CEUTractor;
@@ -11,6 +12,7 @@ public:
     virtual ~CEUTrack();
 
     shared_ptr<Mlt::Playlist> playlist() { return m_playlist; }
+    shared_ptr<CEUProducer> clip(int clipIndex);
 
     int clipIndex(int position);
     string xml(int clipIndex);

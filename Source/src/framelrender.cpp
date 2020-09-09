@@ -163,6 +163,7 @@ void FrameRender::updateTextureData(char *data)
     int width = m_w;
 
     QOpenGLPixelTransferOptions options;
+    options.setAlignment(1);
     options.setImageHeight(height);
     options.setRowLength(width);
     mTexY->setData(QOpenGLTexture::Luminance, QOpenGLTexture::UInt8,data, &options);
@@ -177,23 +178,23 @@ void FrameRender::initTexture()
     // yuv420p
     mTexY = new QOpenGLTexture(QOpenGLTexture::Target2D);
     mTexY->setFormat(QOpenGLTexture::LuminanceFormat);
-    //    mTexY->setFixedSamplePositions(false);
-    mTexY->setMinificationFilter(QOpenGLTexture::Nearest);
-    mTexY->setMagnificationFilter(QOpenGLTexture::Nearest);
+    //mTexY->setFixedSamplePositions(false);
+    mTexY->setMinificationFilter(QOpenGLTexture::Linear);
+    mTexY->setMagnificationFilter(QOpenGLTexture::Linear);
     mTexY->setWrapMode(QOpenGLTexture::ClampToEdge);
 
     mTexU = new QOpenGLTexture(QOpenGLTexture::Target2D);
     mTexU->setFormat(QOpenGLTexture::LuminanceFormat);
-    //    mTexU->setFixedSamplePositions(false);
-    mTexU->setMinificationFilter(QOpenGLTexture::Nearest);
-    mTexU->setMagnificationFilter(QOpenGLTexture::Nearest);
+    //mTexU->setFixedSamplePositions(false);
+    mTexU->setMinificationFilter(QOpenGLTexture::Linear);
+    mTexU->setMagnificationFilter(QOpenGLTexture::Linear);
     mTexU->setWrapMode(QOpenGLTexture::ClampToEdge);
 
     mTexV = new QOpenGLTexture(QOpenGLTexture::Target2D);
     mTexV->setFormat(QOpenGLTexture::LuminanceFormat);
-    //    mTexV->setFixedSamplePositions(false);
-    mTexV->setMinificationFilter(QOpenGLTexture::Nearest);
-    mTexV->setMagnificationFilter(QOpenGLTexture::Nearest);
+    //mTexV->setFixedSamplePositions(false);
+    mTexV->setMinificationFilter(QOpenGLTexture::Linear);
+    mTexV->setMagnificationFilter(QOpenGLTexture::Linear);
     mTexV->setWrapMode(QOpenGLTexture::ClampToEdge);
 }
 

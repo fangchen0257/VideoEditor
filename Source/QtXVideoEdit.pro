@@ -33,7 +33,9 @@ SOURCES += \
     src/effectview.cpp \
     src/effecthorizonheader.cpp \
     src/QtLib/box.cpp \
-    src/EUType.cpp
+    src/EUType.cpp \
+    src/EUProducer.cpp \
+    src/trackitem.cpp
 
 RESOURCES += qml.qrc \
     shaders.qrc
@@ -72,7 +74,9 @@ HEADERS += \
     src/EUFilterTrack.h \
     src/effectview.h \
     src/effecthorizonheader.h \
-    src/QtLib/box.h
+    src/QtLib/box.h \
+    src/EUProducer.h \
+    src/trackitem.h
 
 QT += widgets
 

@@ -12,6 +12,22 @@ CEUTrack::~CEUTrack ()
 {
 }
 
+shared_ptr<CEUProducer> CEUTrack::clip(int clipIndex)
+{
+    shared_ptr<CEUProducer> p;
+
+    do
+    {
+        CHECK_BREAK(!m_playlist);
+
+        shared_ptr<Mlt::Producer> clip(m_playlist->get_clip(clipIndex));
+        p.reset(new CEUProducer(clip));
+
+    } while (false);
+
+    return p;
+}
+
 int CEUTrack::clipIndex(int position)
 {
     int nIndex = -1;
@@ -56,7 +72,10 @@ QImage CEUTrack::image(int clipIndex, int width, int height, int frameNumber)
         frameNumber += info->frame_in;
         frameNumber = min(frameNumber, info->frame_out);
 
-        img = IMAGE(m_playlist->get_clip(clipIndex), width, height, frameNumber);
+        shared_ptr<CEUProducer> p = clip(clipIndex);
+        CHECK_BREAK(!p);
+
+        img = p->image(width, height, frameNumber);
 
     } while (false);
 

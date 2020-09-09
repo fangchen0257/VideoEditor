@@ -1,5 +1,6 @@
 #include "EUSubVideoTrack.h"
 #include "EUTractor.h"
+#include "EUProducer.h"
 
 
 CEUSubVideoTrack::CEUSubVideoTrack(CEUTractor& tractor, shared_ptr<Mlt::Playlist> playlist) : CEUTrack(tractor, playlist)
@@ -10,68 +11,36 @@ CEUSubVideoTrack::~CEUSubVideoTrack ()
 {
 }
 
-shared_ptr<Mlt::Filter> CEUSubVideoTrack::filter(int clipIndex)
-{
-    shared_ptr<Mlt::Filter> filter;
-
-    do
-    {
-        CHECK_BREAK(!m_playlist);
-
-        shared_ptr<Mlt::Producer> producer(m_playlist->get_clip(clipIndex));
-        CHECK_BREAK(!producer);
-
-        int nFilterCount = producer->filter_count();
-        for (int i = 0; i < nFilterCount; ++i)
-        {
-            shared_ptr<Mlt::Filter> f(producer->filter(i));
-            CHECK_CONTINUE(!f);
-
-            char* name = f->get(kDefaultSubVideoFilter);
-            CHECK_CONTINUE(!name);
-
-            filter = f;
-            break;
-        }
-
-    } while (false);
-
-    return filter;
-}
-
 bool CEUSubVideoTrack::appendClip(const string &urlOrXml)
 {
     bool bRet = true;
 
     do
     {
-        shared_ptr<Mlt::Producer> producer = createProducer(profile, urlOrXml.c_str());
-        FAIL_BREAK(!producer, bRet, false);
-
-        CALL_BREAK(appendClip(*producer), bRet);
+        CEUProducer p(profile, urlOrXml.c_str());
+        CALL_BREAK(appendClip(p.producer()), bRet);
 
     } while (false);
 
     return bRet;
 }
 
-bool CEUSubVideoTrack::appendClip(Mlt::Producer &clip)
+bool CEUSubVideoTrack::appendClip(shared_ptr<Mlt::Producer> clip)
 {
     bool bRet = true;
 
     do
     {
+        FAIL_BREAK(!clip || !clip->is_valid(), bRet, false);
         FAIL_BREAK(!m_playlist, bRet, false);
-
-        CALL_BREAK(clip.is_valid(), bRet);
-        CALL_BREAK(addFilter(clip), bRet);
+        CALL_BREAK(addDefaultFilter(clip), bRet);
 
         removeBlankPlaceholder();
 
-        int in = clip.get_in();
-        int out = clip.get_out();
-        clip.set_in_and_out(0, clip.get_length() - 1);
-        CALL_BREAK(!m_playlist->append(clip.parent(), in, out), bRet);
+        int in = clip->get_in();
+        int out = clip->get_out();
+        clip->set_in_and_out(0, clip->get_length() - 1);
+        CALL_BREAK(!m_playlist->append(clip->parent(), in, out), bRet);
 
         m_tractor.onChanged();
 
@@ -86,25 +55,23 @@ bool CEUSubVideoTrack::overwrite(const string &urlOrXml, int position)
 
     do
     {
-        shared_ptr<Mlt::Producer> producer = createProducer(profile, urlOrXml.c_str());
-        FAIL_BREAK(!producer, bRet, false);
-
-        CALL_BREAK(overwrite(*producer, position), bRet);
+        CEUProducer p(profile, urlOrXml.c_str());
+        CALL_BREAK(overwrite(p.producer(), position), bRet);
 
     } while (false);
 
     return bRet;
 }
 
-bool CEUSubVideoTrack::overwrite(Mlt::Producer& clip, int position)
+bool CEUSubVideoTrack::overwrite(shared_ptr<Mlt::Producer> clip, int position)
 {
     bool bRet = true;
 
     do
     {
+        FAIL_BREAK(!clip || !clip->is_valid(), bRet, false);
         FAIL_BREAK(!m_playlist, bRet, false);
-        CALL_BREAK(clip.is_valid(), bRet);
-        CALL_BREAK(addFilter(clip), bRet);
+        CALL_BREAK(addDefaultFilter(clip), bRet);
 
         if (position < 0)
         {
@@ -124,10 +91,10 @@ bool CEUSubVideoTrack::overwrite(Mlt::Producer& clip, int position)
                 ++n;
             }
 
-            int in = clip.get_in();
-            int out = clip.get_out();
-            clip.set_in_and_out(0, clip.get_length() - 1);
-            CALL_BREAK(!m_playlist->append(clip.parent(), in, out), bRet);
+            int in = clip->get_in();
+            int out = clip->get_out();
+            clip->set_in_and_out(0, clip->get_length() - 1);
+            CALL_BREAK(!m_playlist->append(clip->parent(), in, out), bRet);
 
             m_tractor.onChanged();
             break;
@@ -141,11 +108,11 @@ bool CEUSubVideoTrack::overwrite(Mlt::Producer& clip, int position)
         }
         else if (position < 0)
         {
-            CALL_BREAK(!clip.set_in_and_out(clip.get_in() - position, clip.get_out()), bRet);
+            CALL_BREAK(!clip->set_in_and_out(clip->get_in() - position, clip->get_out()), bRet);
             position = 0;
         }
 
-        int length = clip.get_playtime();
+        int length = clip->get_playtime();
         while (length > 0 && targetIndex < m_playlist->count())
         {
             if (m_playlist->clip_length(targetIndex) > length)
@@ -158,10 +125,10 @@ bool CEUSubVideoTrack::overwrite(Mlt::Producer& clip, int position)
         }
         CHECK_BREAK(!bRet);
 
-        int in = clip.get_in();
-        int out = clip.get_out();
-        clip.set_in_and_out(0, clip.get_length() - 1);
-        CALL_BREAK(!m_playlist->insert(clip.parent(), targetIndex, in, out), bRet);
+        int in = clip->get_in();
+        int out = clip->get_out();
+        clip->set_in_and_out(0, clip->get_length() - 1);
+        CALL_BREAK(!m_playlist->insert(clip->parent(), targetIndex, in, out), bRet);
 
         m_tractor.onChanged();
 
@@ -193,10 +160,10 @@ bool CEUSubVideoTrack::trimClipIn(int clipIndex, int delta)
         int position = info->start + delta;
 
         string xml = XML(info->producer);
-        Mlt::Producer clip(profile, "xml-string", xml.c_str());
-        CALL_BREAK(clip.is_valid(), bRet);
+        shared_ptr<Mlt::Producer> clip(new Mlt::Producer(profile, "xml-string", xml.c_str()));
+        FAIL_BREAK(!clip || !clip->is_valid(), bRet, false);
 
-        CALL_BREAK(!clip.set_in_and_out(info->frame_in + delta, info->frame_out), bRet);
+        CALL_BREAK(!clip->set_in_and_out(info->frame_in + delta, info->frame_out), bRet);
         delete m_playlist->replace_with_blank(clipIndex);
         consolidateBlanks();
 
@@ -230,10 +197,10 @@ bool CEUSubVideoTrack::trimClipOut(int clipIndex, int delta)
         int position = info->start;
 
         string xml = XML(info->producer);
-        Mlt::Producer clip(profile, "xml-string", xml.c_str());
-        CALL_BREAK(clip.is_valid(), bRet);
+        shared_ptr<Mlt::Producer> clip(new Mlt::Producer(profile, "xml-string", xml.c_str()));
+        FAIL_BREAK(!clip || !clip->is_valid(), bRet, false);
 
-        CALL_BREAK(!clip.set_in_and_out(info->frame_in, info->frame_out - delta), bRet);
+        CALL_BREAK(!clip->set_in_and_out(info->frame_in, info->frame_out - delta), bRet);
         delete m_playlist->replace_with_blank(clipIndex);
         consolidateBlanks();
 
@@ -256,10 +223,10 @@ bool CEUSubVideoTrack::moveClip(int clipIndex, int position)
         FAIL_BREAK(!info, bRet, false);
 
         string xml = XML(info->producer);
-        Mlt::Producer clip(profile, "xml-string", xml.c_str());
-        CALL_BREAK(clip.is_valid(), bRet);
+        shared_ptr<Mlt::Producer> clip(new Mlt::Producer(profile, "xml-string", xml.c_str()));
+        FAIL_BREAK(!clip || !clip->is_valid(), bRet, false);
 
-        clip.set_in_and_out(info->frame_in, info->frame_out);
+        clip->set_in_and_out(info->frame_in, info->frame_out);
         delete m_playlist->replace_with_blank(clipIndex);
         consolidateBlanks();
 
@@ -325,52 +292,67 @@ bool CEUSubVideoTrack::liftClip(int clipIndex)
     return bRet;
 }
 
-const char* CEUSubVideoTrack::fillProperty()
-{
-    return playerGPU ? "fill" : "transition.fill";
-}
-
-const char* CEUSubVideoTrack::distortProperty()
-{
-    return playerGPU ? "distort" : "transition.distort";
-}
-
-const char* CEUSubVideoTrack::rectProperty()
-{
-    return playerGPU ? "rect" : "transition.rect";
-}
-
-const char* CEUSubVideoTrack::valignProperty()
-{
-    return playerGPU ? "valign" : "transition.valign";
-}
-
-const char* CEUSubVideoTrack::halignProperty()
-{
-    return playerGPU ? "halign" : "transition.halign";
-}
-
-bool CEUSubVideoTrack::addFilter(Mlt::Producer &clip)
+bool CEUSubVideoTrack::addDefaultFilter(shared_ptr<Mlt::Producer> clip)
 {
     bool bRet = true;
 
     do
     {
-        CHECK_BREAK(1 == clip.get_int(kHasDefaultFilter));
+        FAIL_BREAK(!clip, bRet, false);
 
-        Mlt::Filter filter(profile, playerGPU ? "movit.rect" : "affine");
-        CALL_BREAK(filter.is_valid(), bRet);
+        CEUProducer p(clip);
+        CHECK_BREAK(!p.width() || !p.height());
 
-        filter.set(kDefaultSubVideoFilter, 1);
-        filter.set(fillProperty(), 0);
-        filter.set(distortProperty(), 0);
-        filter.set(rectProperty(), "25%/25%:50%x50%");
-        filter.set(valignProperty(), "middle");
-        filter.set(halignProperty(), "center");
+        auto f = p.getFilter(kDefaultPositionAndSizeId);
+        CHECK_BREAK(f);
 
-        CALL_BREAK(!clip.attach(filter), bRet);
+        mlt_rect rect;
+        double width = p.width(), height = p.height(), radio = 0.0;
 
-        clip.set(kHasDefaultFilter, 1);
+        if (width > height)
+        {
+            radio = height / width;
+            rect.x = profile.width() / 4;
+            rect.w = profile.width() / 2;
+            rect.h = rect.w * radio;
+            rect.y = (profile.height() - rect.h) / 2;
+        }
+        else
+        {
+            radio = width / height;
+            rect.y = profile.height() / 4;
+            rect.h = profile.height() / 2;
+            rect.w = rect.h * radio;
+            rect.x = (profile.width() - rect.w) / 2;
+        }
+
+        rect.o = 1.0;
+
+        shared_ptr<Mlt::Filter> filter;
+
+        if (playerGPU)
+        {
+            filter.reset(new Mlt::Filter(profile, "movit.rect"));
+            FAIL_BREAK(!filter || !filter->is_valid(), bRet, false);
+            filter->set("fill", 1);
+            filter->set("distort", 1);
+            filter->set("rect", rect);
+            filter->set("valign", "left");
+            filter->set("halign", "top");
+        }
+        else
+        {
+            filter.reset(new Mlt::Filter(profile, "affine"));
+            FAIL_BREAK(!filter || !filter->is_valid(), bRet, false);
+            filter->set("transition.fill", 1);
+            filter->set("transition.distort", 1);
+            filter->set("transition.rect", rect);
+            filter->set("transition.valign", "left");
+            filter->set("transition.halign", "top");
+        }
+
+        filter->set(kFilterId, kDefaultPositionAndSizeId);
+        p.addFilter(*filter);
 
     } while (false);
 

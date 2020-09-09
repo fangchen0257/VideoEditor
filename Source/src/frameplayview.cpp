@@ -44,8 +44,6 @@
     FramePlayView *pv = qobject_cast<FramePlayView *>(item);
     if (!pv)
         return;
-    m_window = pv->window();
-    m_render.updateTextureData(pv->getData());
 
     int w = pv->getWidth();
     int h = pv->getHeight();
@@ -57,6 +55,8 @@
         m_render.updateTextureInfo(w,h,0);
     }
 
+    m_window = pv->window();
+    m_render.updateTextureData(pv->getData());
  }
 
 FramePlayView::FramePlayView(QQuickItem* parent)

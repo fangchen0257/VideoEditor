@@ -108,6 +108,12 @@ Item {
             {
                 calRenderViewSize(w,h);
             }
+
+            function setPause(p)
+            {
+                pauseBt.visible = !p;
+                playBt.visible = p;
+            }
         }
 
     }
@@ -142,8 +148,6 @@ Item {
                 onClicked:
                 {
                     _global_utinity_obj.setPlay(true);
-                    visible = false;
-                    pauseBt.visible = true;
                 }
 
             }
@@ -158,8 +162,19 @@ Item {
                 onClicked:
                 {
                     _global_utinity_obj.setPlay(false);
-                    visible = false;
-                    playBt.visible = true;
+                }
+            }
+
+            LibComponent.StyleImageButton {
+                id:stopBt
+                width: buttonWidth
+                height: buttonHeight
+                bgNormal: "qrc:/res/reset_normal.png"
+                bgHover: "qrc:/res/reset_hover_pressed.png"
+                bgPressed: "qrc:/res/reset_hover_pressed.png"
+                onClicked:
+                {
+                    _global_utinity_obj.reset();
                 }
             }
 
@@ -171,13 +186,13 @@ Item {
                 bgPressed: "qrc:/res/backward_hover_pressed.png"
                 onClicked:
                 {
-                    if (playItem.curDuration > 5)
+                    if (playItem.curDuration > 1)
                     {
-                        var v = playItem.curDuration - 5;
+                        var v = playItem.curDuration - 1;
                         _global_utinity_obj.seekToPos(v);
                         playItem.curDuration = v;
                         progress.value = v;
-                        durationEdit.setcurrentDuration(v);
+                        //durationEdit.setcurrentDuration(v);
                     }
                 }
             }
@@ -191,13 +206,13 @@ Item {
                 bgPressed: "qrc:/res/forward_hover_pressed.png"
                 onClicked:
                 {
-                    if (playItem.curDuration + 5 < playItem.totalDuration)
+                    if (playItem.curDuration + 1 < playItem.totalDuration)
                     {
-                        var v = playItem.curDuration + 5;
+                        var v = playItem.curDuration + 1;
                         _global_utinity_obj.seekToPos(v);
                         playItem.curDuration = v;
                         progress.value = v;
-                        durationEdit.setcurrentDuration(v);
+                        //durationEdit.setcurrentDuration(v);
                     }
                 }
             }
@@ -275,20 +290,108 @@ Item {
             }
         }*/
 
-       /* LibComponent.StyleImageButton{
-            anchors.left: rowLayout.left
+       LibComponent.StyleImageButton
+       {
+            property bool mute: false
+            property int volume: 50
+
+            id:volumeBt;
+            anchors.left: durationEdit.left
             anchors.top: rowLayout.bottom
-            anchors.margins: 0
-            width: 20
-            height: 21
-            bgNormal: "qrc:/res/import_normal.png"
-            bgHover: "qrc:/res/import_hover.png"
-            bgPressed: "qrc:/res/import_pressed.png"
+            //anchors.rightMargin:
+            width: 16
+            height: 16
+            bgNormal: "qrc:/res/volume_normal.png"
+            bgHover: "qrc:/res/volume_hover.png"
+            bgPressed: "qrc:/res/volume_hover.png"
+
             onClicked:
             {
-                _global_utinity_obj.openFile();
+                mute = !mute;
+                if (mute)
+                {
+                    volume = volumeSlider.value;
+                    volumeSlider.value = 0;
+                    bgNormal = "qrc:/res/no_volume_normal.png"
+                    bgHover = "qrc:/res/no_volume_hover.png"
+                    bgPressed = "qrc:/res/no_volume_hover.png"
+                }
+                else
+                {
+                    volumeSlider.value = volume;
+                    bgNormal = "qrc:/res/volume_normal.png"
+                    bgHover = "qrc:/res/volume_hover.png"
+                    bgPressed = "qrc:/res/volume_hover.png"
+                }
+
+                 _global_utinity_obj.setVolume(volumeSlider.value);
             }
-        }*/
+        }
+
+        Slider
+        {
+            id:volumeSlider
+            anchors.left: volumeBt.right
+            anchors.top: rowLayout.bottom
+            anchors.leftMargin: 2
+            value: 50
+            from: 0
+            to:100
+            width: 100
+            height: buttonHeight
+            padding: 0
+            stepSize: 1
+            onMoved:
+            {
+                _global_utinity_obj.setVolume(value);
+
+                if (value == 0)
+                {
+                    volumeBt.bgNormal = "qrc:/res/no_volume_normal.png"
+                    volumeBt.bgHover = "qrc:/res/no_volume_hover.png"
+                    volumeBt.bgPressed = "qrc:/res/no_volume_hover.png"
+                    volumeBt.mute = true;
+                    volumeBt.volume = 50;
+                }
+                else
+                {
+                    volumeBt.bgNormal = "qrc:/res/volume_normal.png"
+                    volumeBt.bgHover = "qrc:/res/volume_hover.png"
+                    volumeBt.bgPressed = "qrc:/res/volume_hover.png"
+                    volumeBt.mute = false;
+                }
+
+            }
+
+            background: Rectangle
+            {
+                     x: volumeSlider.leftPadding
+                     y: volumeSlider.topPadding + volumeSlider.availableHeight / 2 - height / 2
+                     width: volumeSlider.availableWidth
+                     height: 2
+                     radius: 1
+                     color: "#00A4FB"
+
+                     Rectangle {
+                         width: volumeSlider.visualPosition * parent.width
+                         height: 2
+                         color: "#0082A2"
+                         radius: 1
+                     }
+                 }
+
+                 handle: Rectangle {
+                     x: volumeSlider.leftPadding + volumeSlider.visualPosition * (volumeSlider.availableWidth - width)
+                     y: volumeSlider.topPadding + volumeSlider.availableHeight / 2 - height / 2
+                     implicitWidth: 14
+                     implicitHeight: 14
+                     radius: 7
+                     color: "#323232"
+                     border.color: "#00A4FB"
+                     border.width: 1
+                 }
+
+        }
 
         onWidthChanged: {
             durationEdit.setTimeEditRect()

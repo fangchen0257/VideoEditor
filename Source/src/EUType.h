@@ -40,20 +40,26 @@ typedef enum {
 
 #define kBackgroundTrackId "background"
 #define kFilterPriority "filterPriority"
+#define kFilterId "filterId"
 #define kHasDefaultFilter "hasDefaultFilter"
+#define kSubVideo "subVideo"
 
 #define kDefaultMltProfile "atsc_1080p_25"
 #define kDefaultTransition "lumaMix"
-#define kDefaultSubVideoFilter "defaultSubVideoFilter"
+#define kDefaultBrightnessId "defaultBrightness20200909"
+#define kDefaultContrastId "defaultContrast20200909"
+#define kDefaultPositionAndSizeId "defaultPositionAndSize20200909"
+#define kDefaultVolumneId "defaultVolume20200909"
 
 
 extern Mlt::Profile profile;
-extern Mlt::Profile previewProfile;
+
 extern bool playerGPU;
+extern int drawMethod;
 
 void setProfile(Mlt::Profile& profile, const char* profileName);
-shared_ptr<Mlt::Producer> createProducer(Mlt::Profile& profile, const char* urlOrXml);
+void profileFromProducer(Mlt::Profile& profile, const char* urlOrXml);
 string XML(Mlt::Service* service, bool withProfile = false, bool withMetadata = false);
-QImage IMAGE(Mlt::Frame* frame, int width, int height);
-QImage IMAGE(Mlt::Producer* producer, int width, int height, int frameNumber);
+QImage image(Mlt::Frame* frame, int width, int height);
+int coerceMultiple(int value, int multiple = 2);
 

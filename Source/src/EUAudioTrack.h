@@ -9,9 +9,9 @@ public:
     virtual ~CEUAudioTrack();
 
     bool appendClip(const string &urlOrXml);
-    bool appendClip(Mlt::Producer &clip);
+    bool appendClip(shared_ptr<Mlt::Producer> clip);
     bool overwrite(const string &urlOrXml, int position);
-    bool overwrite(Mlt::Producer& clip, int position);
+    bool overwrite(shared_ptr<Mlt::Producer> clip, int position);
     bool trimClipIn(int clipIndex, int delta);
     bool trimClipOut(int clipIndex, int delta);
     bool moveClip(int clipIndex, int position);

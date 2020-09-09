@@ -1,5 +1,6 @@
 #include "EUAudioTrack.h"
 #include "EUTractor.h"
+#include "EUProducer.h"
 
 
 CEUAudioTrack::CEUAudioTrack(CEUTractor& tractor, shared_ptr<Mlt::Playlist> playlist) : CEUTrack(tractor, playlist)
@@ -16,31 +17,29 @@ bool CEUAudioTrack::appendClip(const string &urlOrXml)
 
     do
     {
-        shared_ptr<Mlt::Producer> producer = createProducer(profile, urlOrXml.c_str());
-        FAIL_BREAK(!producer, bRet, false);
-
-        CALL_BREAK(appendClip(*producer), bRet);
+        CEUProducer p(profile, urlOrXml.c_str());
+        CALL_BREAK(appendClip(p.producer()), bRet);
 
     } while (false);
 
     return bRet;
 }
 
-bool CEUAudioTrack::appendClip(Mlt::Producer &clip)
+bool CEUAudioTrack::appendClip(shared_ptr<Mlt::Producer> clip)
 {
     bool bRet = true;
 
     do
     {
+        FAIL_BREAK(!clip || !clip->is_valid(), bRet, false);
         FAIL_BREAK(!m_playlist, bRet, false);
-        CALL_BREAK(clip.is_valid(), bRet);
 
         removeBlankPlaceholder();
 
-        int in = clip.get_in();
-        int out = clip.get_out();
-        clip.set_in_and_out(0, clip.get_length() - 1);
-        CALL_BREAK(!m_playlist->append(clip.parent(), in, out), bRet);
+        int in = clip->get_in();
+        int out = clip->get_out();
+        clip->set_in_and_out(0, clip->get_length() - 1);
+        CALL_BREAK(!m_playlist->append(clip->parent(), in, out), bRet);
 
         m_tractor.onChanged();
 
@@ -55,22 +54,21 @@ bool CEUAudioTrack::overwrite(const string &urlOrXml, int position)
 
     do
     {
-        shared_ptr<Mlt::Producer> producer = createProducer(profile, urlOrXml.c_str());
-        FAIL_BREAK(!producer, bRet, false);
-
-        CALL_BREAK(overwrite(*producer, position), bRet);
+        CEUProducer p(profile, urlOrXml.c_str());
+        CALL_BREAK(overwrite(p.producer(), position), bRet);
 
     } while (false);
 
     return bRet;
 }
 
-bool CEUAudioTrack::overwrite(Mlt::Producer& clip, int position)
+bool CEUAudioTrack::overwrite(shared_ptr<Mlt::Producer> clip, int position)
 {
     bool bRet = true;
 
     do
     {
+        FAIL_BREAK(!clip || !clip->is_valid(), bRet, false);
         FAIL_BREAK(!m_playlist, bRet, false);
 
         if (position < 0)
@@ -91,10 +89,10 @@ bool CEUAudioTrack::overwrite(Mlt::Producer& clip, int position)
                 ++n;
             }
 
-            int in = clip.get_in();
-            int out = clip.get_out();
-            clip.set_in_and_out(0, clip.get_length() - 1);
-            CALL_BREAK(!m_playlist->append(clip.parent(), in, out), bRet);
+            int in = clip->get_in();
+            int out = clip->get_out();
+            clip->set_in_and_out(0, clip->get_length() - 1);
+            CALL_BREAK(!m_playlist->append(clip->parent(), in, out), bRet);
 
             m_tractor.onChanged();
             break;
@@ -108,11 +106,11 @@ bool CEUAudioTrack::overwrite(Mlt::Producer& clip, int position)
         }
         else if (position < 0)
         {
-            CALL_BREAK(!clip.set_in_and_out(clip.get_in() - position, clip.get_out()), bRet);
+            CALL_BREAK(!clip->set_in_and_out(clip->get_in() - position, clip->get_out()), bRet);
             position = 0;
         }
 
-        int length = clip.get_playtime();
+        int length = clip->get_playtime();
         while (length > 0 && targetIndex < m_playlist->count())
         {
             if (m_playlist->clip_length(targetIndex) > length)
@@ -125,10 +123,10 @@ bool CEUAudioTrack::overwrite(Mlt::Producer& clip, int position)
         }
         CHECK_BREAK(!bRet);
 
-        int in = clip.get_in();
-        int out = clip.get_out();
-        clip.set_in_and_out(0, clip.get_length() - 1);
-        CALL_BREAK(!m_playlist->insert(clip.parent(), targetIndex, in, out), bRet);
+        int in = clip->get_in();
+        int out = clip->get_out();
+        clip->set_in_and_out(0, clip->get_length() - 1);
+        CALL_BREAK(!m_playlist->insert(clip->parent(), targetIndex, in, out), bRet);
 
         m_tractor.onChanged();
 
@@ -160,10 +158,10 @@ bool CEUAudioTrack::trimClipIn(int clipIndex, int delta)
         int position = info->start + delta;
 
         string xml = XML(info->producer);
-        Mlt::Producer clip(profile, "xml-string", xml.c_str());
-        CALL_BREAK(clip.is_valid(), bRet);
+        shared_ptr<Mlt::Producer> clip(new Mlt::Producer(profile, "xml-string", xml.c_str()));
+        FAIL_BREAK(!clip || !clip->is_valid(), bRet, false);
 
-        CALL_BREAK(!clip.set_in_and_out(info->frame_in + delta, info->frame_out), bRet);
+        CALL_BREAK(!clip->set_in_and_out(info->frame_in + delta, info->frame_out), bRet);
         delete m_playlist->replace_with_blank(clipIndex);
         consolidateBlanks();
 
@@ -197,10 +195,10 @@ bool CEUAudioTrack::trimClipOut(int clipIndex, int delta)
         int position = info->start;
 
         string xml = XML(info->producer);
-        Mlt::Producer clip(profile, "xml-string", xml.c_str());
-        CALL_BREAK(clip.is_valid(), bRet);
+        shared_ptr<Mlt::Producer> clip(new Mlt::Producer(profile, "xml-string", xml.c_str()));
+        FAIL_BREAK(!clip || !clip->is_valid(), bRet, false);
 
-        CALL_BREAK(!clip.set_in_and_out(info->frame_in, info->frame_out - delta), bRet);
+        CALL_BREAK(!clip->set_in_and_out(info->frame_in, info->frame_out - delta), bRet);
         delete m_playlist->replace_with_blank(clipIndex);
         consolidateBlanks();
 
@@ -223,10 +221,10 @@ bool CEUAudioTrack::moveClip(int clipIndex, int position)
         FAIL_BREAK(!info, bRet, false);
 
         string xml = XML(info->producer);
-        Mlt::Producer clip(profile, "xml-string", xml.c_str());
-        CALL_BREAK(clip.is_valid(), bRet);
+        shared_ptr<Mlt::Producer> clip(new Mlt::Producer(profile, "xml-string", xml.c_str()));
+        FAIL_BREAK(!clip || !clip->is_valid(), bRet, false);
 
-        clip.set_in_and_out(info->frame_in, info->frame_out);
+        clip->set_in_and_out(info->frame_in, info->frame_out);
         delete m_playlist->replace_with_blank(clipIndex);
         consolidateBlanks();
 

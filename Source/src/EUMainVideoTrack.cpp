@@ -1,5 +1,6 @@
 #include "EUMainVideoTrack.h"
 #include "EUTractor.h"
+#include "EUProducer.h"
 
 
 CEUMainVideoTrack::CEUMainVideoTrack(CEUTractor& tractor, shared_ptr<Mlt::Playlist> playlist) : CEUTrack(tractor, playlist)
@@ -67,31 +68,29 @@ bool CEUMainVideoTrack::appendClip(const string &urlOrXml)
 
     do
     {
-        shared_ptr<Mlt::Producer> producer = createProducer(profile, urlOrXml.c_str());
-        FAIL_BREAK(!producer, bRet, false);
-
-        CALL_BREAK(appendClip(*producer), bRet);
+        CEUProducer p(profile, urlOrXml.c_str());
+        CALL_BREAK(appendClip(p.producer()), bRet);
 
     } while (false);
 
     return bRet;
 }
 
-bool CEUMainVideoTrack::appendClip(Mlt::Producer &clip)
+bool CEUMainVideoTrack::appendClip(shared_ptr<Mlt::Producer> clip)
 {
     bool bRet = true;
 
     do
     {
+        FAIL_BREAK(!clip || !clip->is_valid(), bRet, false);
         FAIL_BREAK(!m_playlist, bRet, false);
-        CALL_BREAK(clip.is_valid(), bRet);
 
         removeBlankPlaceholder();
 
-        int in = clip.get_in();
-        int out = clip.get_out();
-        clip.set_in_and_out(0, clip.get_length() - 1);
-        CALL_BREAK(!m_playlist->append(clip.parent(), in, out), bRet);
+        int in = clip->get_in();
+        int out = clip->get_out();
+        clip->set_in_and_out(0, clip->get_length() - 1);
+        CALL_BREAK(!m_playlist->append(clip->parent(), in, out), bRet);
 
         m_tractor.onChanged();
 
@@ -106,34 +105,32 @@ bool CEUMainVideoTrack::overwrite(const string &urlOrXml, int position)
 
     do
     {
-        shared_ptr<Mlt::Producer> producer = createProducer(profile, urlOrXml.c_str());
-        FAIL_BREAK(!producer, bRet, false);
-
-        CALL_BREAK(overwrite(*producer, position), bRet);
+        CEUProducer p(profile, urlOrXml.c_str());
+        CALL_BREAK(overwrite(p.producer(), position), bRet);
 
     } while (false);
 
     return bRet;
 }
 
-bool CEUMainVideoTrack::overwrite(Mlt::Producer& clip, int position)
+bool CEUMainVideoTrack::overwrite(shared_ptr<Mlt::Producer> clip, int position)
 {
     bool bRet = true;
 
     do
     {
+        FAIL_BREAK(!clip || !clip->is_valid(), bRet, false);
         FAIL_BREAK(!m_playlist, bRet, false);
-        CALL_BREAK(clip.is_valid(), bRet);
 
         removeBlankPlaceholder();
 
         int targetIndex = m_playlist->get_clip_index_at(position);
         clearMixReferences(targetIndex, true, false);
 
-        int in = clip.get_in();
-        int out = clip.get_out();
-        clip.set_in_and_out(0, clip.get_length() - 1);
-        CALL_BREAK(!m_playlist->insert(clip, targetIndex, in + 100, out - 100), bRet);
+        int in = clip->get_in();
+        int out = clip->get_out();
+        clip->set_in_and_out(0, clip->get_length() - 1);
+        CALL_BREAK(!m_playlist->insert(clip->parent(), targetIndex, in, out), bRet);
 
         m_tractor.onChanged();
 

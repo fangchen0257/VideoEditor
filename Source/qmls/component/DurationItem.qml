@@ -12,9 +12,10 @@ Item {
     property alias radius: bgrc.radius
     property string textColor: "#F0F0F0"
 
-    property int hourRadix: (60 * 60 * 30)
-    property int minuteRadix: (60 * 30)
-    property int secondsRadix: 30
+    property int hourRadix: (60 * 60)
+    property int minuteRadix: (60)
+    property int secondsRadix: 1
+    property int framenumber: 0
 
     signal  editFocusOut()
 
@@ -117,10 +118,10 @@ Item {
             bgPressed: "qrc:/res/frame_plus_hover_pressed.png"
             bgDisabled: "qrc:/res/frame_plus_disable.png"
             onClicked: {
-                if(currentDuration < totalDuration){
+                /*if(currentDuration < totalDuration){
                     ++currentDuration
                     refushPlayDuration()
-                }
+                }*/
             }
 
             //enabled: false
@@ -138,11 +139,11 @@ Item {
             bgPressed: "qrc:/res/frame_minus_hover_pressed.png"
             bgDisabled: "qrc:/res/frame_minus_disable.png"
             onClicked: {
-                if(currentDuration > 0)
+                /*if(currentDuration > 0)
                 {
                     --currentDuration
                     refushPlayDuration()
-                }
+                }*/
 
             }
             //enabled: false
@@ -157,16 +158,20 @@ Item {
         var hour = parseInt(currentDuration / hourRadix)
         var minutes = parseInt( (currentDuration % hourRadix) / minuteRadix )
         var seconds = parseInt( ((currentDuration % hourRadix) % minuteRadix) / secondsRadix )
-        var milliseconds = parseInt( ((currentDuration % hourRadix) % minuteRadix) % secondsRadix )
+        var milliseconds = parseInt( framenumber )
+
+
+
         hourDisplay.text = formatTime(hour)
         minuteDisplay.text = formatTime(minutes)
         secondDisplay.text = formatTime(seconds)
         milliSecondsDisplay.text = formatTime(milliseconds)
     }
 
-    function setcurrentDuration(duration){
+    function setcurrentDuration(duration,framen){
         totalDuration = duration
         currentDuration = duration
+        framenumber = framen;
         refushPlayDuration()
     }
 
@@ -187,7 +192,7 @@ Item {
     }
 
     Component.onCompleted: {
-        _global_utinity_obj.setVideoDuration.connect(setcurrentDuration)
+        _global_utinity_obj.setVideoSecond.connect(setcurrentDuration)
         setTimeEditRect()
         refushPlayDuration()
     }

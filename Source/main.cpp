@@ -9,7 +9,7 @@
 #include <qtranslator.h>
 #include <windows.h>
 #include <qdir.h>
-
+#include "src/EUType.h"
 #include "src/qmltypesregister.h"
 #include "src/mainwin.h"
 
@@ -58,52 +58,56 @@ void QtMessageLogHandler(QtMsgType type, const QMessageLogContext &context, cons
     mutex.unlock();
 }
 
-QString GetExecPath()
+class Application : public QApplication
 {
-    wchar_t wzPath[MAX_PATH] = {0};
-    ::GetModuleFileNameW(nullptr, wzPath, MAX_PATH);
-    wchar_t* p = wcsrchr(wzPath, '\\');
-    if (nullptr != p)
+public:
+
+    Application(int &argc, char **argv)
+        : QApplication(argc, argv)
     {
-        *p = '\0';
-    }
+        QDir dir(applicationDirPath());
+        dir.cd("lib");
+        dir.cd("qt5");
+        addLibraryPath(dir.absolutePath());
+        setOrganizationName("Easeus");
+        setApplicationName("EuVideoEdit");
+        setApplicationVersion("1.0");
+        setAttribute(Qt::AA_UseHighDpiPixmaps);
+        setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
 
-    QString strExecPath = QString::fromWCharArray(wzPath);
-    return strExecPath;
-}
+        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
-void SetCurExecPath()
-{
-    QString strPath = GetExecPath();
+        dir = applicationDirPath();
+        if (!playerGPU && drawMethod == Qt::AA_UseSoftwareOpenGL)
+        {
+            if (QFile::exists(dir.filePath("opengl32sw.dll")))
+            {
+                QFile::rename(dir.filePath("opengl32sw.dll"), dir.filePath("opengl32.dll"));
+            }
+        }
+        else if (QFile::exists(dir.filePath("opengl32.dll")))
+        {
+            QFile::remove(dir.filePath("opengl32sw.dll"));
+            QFile::rename(dir.filePath("opengl32.dll"), dir.filePath("opengl32sw.dll"));
+        }
 
-    const wchar_t* pPath = reinterpret_cast<const wchar_t*>(strPath.utf16());
-    if (nullptr != pPath)
-    {
-        ::SetCurrentDirectoryW(pPath);
-    }
-
-    QDir::setCurrent(strPath);
-    QCoreApplication::addLibraryPath(strPath);
-}
-
-void installTranslator(QApplication* pApp)
-{
-    do
-    {
-        if (nullptr == pApp) break;
+        if (playerGPU)
+        {
+            QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
+        }
+        else if (drawMethod >= Qt::AA_UseDesktopOpenGL &&
+                 drawMethod <= Qt::AA_UseSoftwareOpenGL)
+        {
+            QCoreApplication::setAttribute(Qt::ApplicationAttribute(drawMethod));
+        }
 
         QTranslator* pTrans = new QTranslator;
-        if (nullptr == pTrans) break;
-        pTrans->load("../Resource/QtXVideoEdit_zh_CN.qm");
-        pApp->installTranslator(pTrans);
-    } while(0);
-}
+        if (pTrans)
+        {
+            pTrans->load("../Resource/QtXVideoEdit_zh_CN.qm");
+            installTranslator(pTrans);
+        }
 
-void resetStyleSheet(QApplication* pApp)
-{
-    do
-    {
-        if (nullptr == pApp) break;
         QString strStyleSheet = QString("*{font-size: 14px; font-family:Segoe UI;}\r\n");
 
         QFile file(":/res/StyleSheet.css");
@@ -112,22 +116,20 @@ void resetStyleSheet(QApplication* pApp)
             QByteArray strStyle = file.readAll();
             strStyleSheet += strStyle;
         }
-        pApp->setStyleSheet(strStyleSheet);
-    } while(0);
-}
+        setStyleSheet(strStyleSheet);
+
+        Mlt::Factory::init();
+        setProfile(profile, kDefaultMltProfile);
+    }
+
+    ~Application()
+    {
+    }
+};
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QApplication app(argc, argv);
-
-    if(app.testAttribute(Qt::AA_UseDesktopOpenGL))
-    {
-        app.setAttribute(Qt::AA_UseDesktopOpenGL);
-    }
-    SetCurExecPath();
-    installTranslator(&app);
-    resetStyleSheet(&app);
+    Application app(argc, argv);
 
     CMainWin mainw;
     mainw.setFixedSize(1280,768);

@@ -4,6 +4,7 @@
 #include <QTableWidget>
 #include "effecthorizonheader.h"
 #include "QtLib/box.h"
+#include "trackitem.h"
 
 enum _TRACK_OPER_
 {
@@ -24,9 +25,9 @@ enum _ROW_ITEMS_
     ROW_VIDEO,
     ROW_PICINPIC,
     ROW_FILTERS,
-    ROW_TRANSITIONS,
     ROW_TEXT,
     ROW_MUSIC,
+    ROW_TRANSITIONS,
     ROW_CNT
 };
 
@@ -41,9 +42,14 @@ private:
     void Layout();
     void InitFirstColumn();
     CBox* InitCellItem(QString strIcon, QString strText, QVector<QString> vecResLock, QVector<QString> vecVisible, QVector<QString> vecMute);
+    void InitTrackContainer();
+
+private:
+    void ResetTrack();
 
 private:
     CEffectHorizonHeader* m_pEffectHeader;
+    CBox* m_pHboxTrackVideo;
 };
 
 #endif // EFFECTVIEW_H

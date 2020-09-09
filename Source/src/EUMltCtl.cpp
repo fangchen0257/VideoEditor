@@ -1,18 +1,16 @@
 #include "EUMltCtl.h"
+#include "EUProducer.h"
 
 
 CMltCtl::CMltCtl()
     : m_userInfo(nullptr)
     , m_recvFrameFun(nullptr)
 {
-    Mlt::Factory::init();
-    setProfile(profile, kDefaultMltProfile);
 }
 
 CMltCtl::~CMltCtl ()
 {
     EUClose();
-    Mlt::Factory::close();
 }
 
 // MLT consumer-frame-show event handler
@@ -30,6 +28,7 @@ void CMltCtl::on_frame_show (mlt_consumer, void* userInfo, mlt_frame frame_ptr)
     data.image = t;
     data.width = w;
     data.height = h;
+    data.pos = mlt_frame_get_position( frame_ptr );
 
     if( szMltCtl )
     {
@@ -68,7 +67,8 @@ int CMltCtl::EUOpen (const char* url)
     do
     {
         EUClose ();
-        m_producer = createProducer(previewProfile, url);
+        profileFromProducer(m_profile, url);
+        m_producer = CEUProducer(m_profile, url).producer();
         error = Open();
 
     } while (false);
@@ -108,13 +108,13 @@ void CMltCtl::EUPlay ()
 {
     if (m_producer)
     {
-        m_producer->set_speed (1);
+        m_producer->set_speed (1.0);
     }
     
     if (m_consumer)
     {
         m_consumer->start();
-        m_consumer->set("refresh", 1);
+        refreshConsumer();
     }
 }
 
@@ -126,6 +126,7 @@ void CMltCtl::EUPause ()
        m_producer->seek(m_consumer->position() + 1);
        m_consumer->purge();
        m_consumer->start();
+       refreshConsumer();
     }
 }
 
@@ -139,12 +140,23 @@ void CMltCtl::EUStop()
     {
         m_producer->seek(0);
     }
+
+    refreshConsumer();
 }
 
 void CMltCtl::ReleaseFrame(FrameData frame)
 {
     Mlt::Frame* f = static_cast<Mlt::Frame*>(frame.frame);
     delete f;
+}
+
+void CMltCtl::refreshConsumer(bool scrubAudio)
+{
+    if (m_consumer)
+    {
+        m_consumer->set("scrub_audio", scrubAudio);
+        m_consumer->set("refresh", 1);
+    }
 }
 
 void CMltCtl::EUSetVolume (double volume)
@@ -199,12 +211,37 @@ int CMltCtl::EUGetDuration()
     do
     {
         CHECK_BREAK(!m_producer);
-
-        duration = static_cast<int>(m_producer->get_length() / m_producer->get_fps());
+        duration = static_cast<int>(m_producer->get_playtime() / m_producer->get_fps());
 
     } while (false);
 
     return duration;
+}
+
+int CMltCtl::EUGetLength()
+{
+    int duration = 0;
+
+    do
+    {
+        CHECK_BREAK(!m_producer);
+        duration = m_producer->get_playtime();
+    } while (false);
+
+    return duration;
+}
+
+double CMltCtl::EUGetFps()
+{
+    double fps = 0;
+
+    do
+    {
+        CHECK_BREAK(!m_producer);
+        fps = m_producer->get_fps();
+    } while (false);
+
+    return fps;
 }
 
 int CMltCtl::Open()
@@ -228,23 +265,32 @@ int CMltCtl::Open()
         mlt_service_type type = m_producer->type();
         if (producer_type == type)
         {
-            previewProfile.from_producer(*m_producer);
+            m_consumer.reset(new Mlt::Consumer(m_profile, "sdl2_audio"));
 
-            int w = m_producer->get_int("width");
-            int h = m_producer->get_int("height");
-
-            float ratio = 1.0f * w / h;
-            h = (h >> 4) << 4;
-            w = (int(ratio * h) >> 4) << 4;
-
-            previewProfile.set_width(w);
-            previewProfile.set_height(h);
-
-            m_consumer.reset(new Mlt::Consumer(previewProfile, "sdl_audio"));
+            if (!m_profile.progressive())
+            {
+                m_consumer->set("progressive", 0);
+            }
+            m_consumer->set("rescale", "bilinear");
+            m_consumer->set("deinterlace_method", "onefield");
+            m_consumer->set("buffer", qMax(25, qRound(m_profile.fps())));
+            m_consumer->set("prefill", qMax(1, qRound(m_profile.fps() / 25.0)));
+            m_consumer->set("drop_max", qRound(m_profile.fps() / 4.0));
         }
         else
         {
-            m_consumer.reset(new Mlt::Consumer(profile, "sdl_audio"));
+            m_consumer.reset(new Mlt::Consumer(profile, "sdl2_audio"));
+
+            m_consumer->set("terminate_on_pause", 0);
+            if (!profile.progressive())
+            {
+                m_consumer->set("0.progressive", 0);
+            }
+            m_consumer->set("0.rescale", "bilinear");
+            m_consumer->set("0.deinterlace_method", "onefield");
+            m_consumer->set("0.buffer", qMax(25, qRound(profile.fps())));
+            m_consumer->set("0.prefill", qMax(1, qRound(profile.fps() / 25.0)));
+            m_consumer->set("0.drop_max", qRound(profile.fps() / 4.0));
         }
 #endif
         if (!m_consumer->is_valid ())
