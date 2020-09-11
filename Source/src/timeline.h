@@ -3,17 +3,19 @@
 
 #include <QWidget>
 #include "effectview.h"
+#include "globalutinityobject.h"
 class CTimeLine : public QWidget
 {
     Q_OBJECT
 public:
-    CTimeLine(QWidget* parent = nullptr);
+    CTimeLine(GlobalUtinityObject* pGlobalObject, QWidget* parent = nullptr);
 
 private:
     void Layout();
 
 private:
     CEffectView* m_pEffectView;
+    GlobalUtinityObject* m_pGlobalObject;
 };
 
 #endif // CTIMELINE_H

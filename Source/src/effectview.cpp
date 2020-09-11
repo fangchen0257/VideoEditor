@@ -4,6 +4,10 @@
 #include <qscrollbar.h>
 #include "QtLib/ImgButton.h"
 #include <qlabel.h>
+#include <qvariant.h>
+#include <qurl.h>
+#include <qimage.h>
+#include "qmltypesregister.h"
 
 CEffectView::CEffectView(QWidget* parent)
     :QTableWidget(parent)
@@ -46,7 +50,6 @@ void CEffectView::Layout()
 
         InitFirstColumn();
         InitTrackContainer();
-        ResetTrack();
     } while(0);
 }
 
@@ -156,20 +159,112 @@ void CEffectView::InitTrackContainer()
     {
         m_pHboxTrackVideo = new CBox(false);
         if (nullptr == m_pHboxTrackVideo) break;
-        m_pHboxTrackVideo->SetDrawFrame(true);
         m_pHboxTrackVideo->SetMargins(0,5,0,0);
         setCellWidget(ROW_VIDEO,1,m_pHboxTrackVideo);
     } while(0);
 }
 
-void CEffectView::ResetTrack()
+void CEffectView::AppendClip(int type, QString strText, shared_ptr<CEUProducer> pProducer)
 {
     do
     {
-        if (nullptr == m_pHboxTrackVideo) break;
+        if (nullptr==m_pHboxTrackVideo || nullptr==m_pEffectHeader) break;
 
-        CTrackItem* pTrackItem = new CTrackItem(ITEM_VIDEO, ":/res/photo_hover_pressed.png", "a test video", m_pHboxTrackVideo);
+        CTrackItem* pTrackItem = new CTrackItem(TRACK_TYPE(type), strText, pProducer, m_pHboxTrackVideo);
         if (nullptr == pTrackItem) break;
+        connect(pTrackItem, SIGNAL(sigItemSelect(CTrackItem*)), this, SLOT(slotTrackItemSelect(CTrackItem*)));
+        connect(pTrackItem, SIGNAL(sigClipTrim(int,int)), this, SLOT(slotClipTrim(int,int)));
+
+        double pixelPerFrame = m_pEffectHeader->getPixelPerFrame();
+        pTrackItem->ResetPixelPerFrame(pixelPerFrame);
         pTrackItem->move(0,5);
+        pTrackItem->show();
+        m_vecTrackItems.push_back(pTrackItem);
+    } while(0);
+}
+
+QString CEffectView::trackItemText(QString strMediaPath)
+{
+    strMediaPath = strMediaPath.right(strMediaPath.length() - strMediaPath.lastIndexOf("/")-1);
+    return strMediaPath;
+}
+
+void CEffectView::slotAddMedia2Track(int type, const QVariant &media)
+{
+    do
+    {
+        GlobalUtinityObject* pGlobalObj = QmlTypesRegister::instance().UtinityObject();
+        if (nullptr == pGlobalObj) break;
+
+        shared_ptr<CEUMainVideoTrack> pMainTrack = pGlobalObj->GetTrackor().mainVideoTrack();
+        if (nullptr == pMainTrack) break;
+
+        QString mediaPath = media.toUrl().path();
+        int pos = mediaPath.indexOf(":");
+        if(-1 != pos){
+            mediaPath = mediaPath.mid(pos - 1);
+        }
+        qDebug() << "media path:" << mediaPath;
+
+        if (!pMainTrack->appendClip(mediaPath.toUtf8().constData())) break;
+
+        int clipIndex = pMainTrack->playlist()->count()-1;
+        shared_ptr<CEUProducer> pProducer = pMainTrack->clip(clipIndex);
+
+        AppendClip(type, trackItemText(mediaPath), pProducer);
+    } while(0);
+}
+
+void CEffectView::slotTrackItemSelect(CTrackItem *pItem)
+{
+    do
+    {
+        Q_UNUSED(pItem);
+
+        GlobalUtinityObject* pGlobalObj = QmlTypesRegister::instance().UtinityObject();
+        if (nullptr == pGlobalObj) break;
+
+        CEUTractor trackor =  pGlobalObj->GetTrackor();
+        shared_ptr<Mlt::Producer> pProducer = trackor.producer();
+        if (nullptr == pProducer) break;
+
+        pGlobalObj->GetMltCtrl().EUSetProducer(pProducer);
+        pGlobalObj->GetMltCtrl().EUSeekToPos(0);
+        pGlobalObj->GetMltCtrl().EUPause();
+    } while(0);
+}
+
+void CEffectView::slotScaleValueChanged(int value)
+{
+    if (nullptr == m_pEffectHeader) return;
+    m_pEffectHeader->setScaleFactor(value);
+
+    for (int i=0,iEnd=m_vecTrackItems.size(); i<iEnd; ++i)
+    {
+        CTrackItem* pItem = m_vecTrackItems[i];
+        if (nullptr == pItem) continue;
+        pItem->ResetPixelPerFrame(m_pEffectHeader->getPixelPerFrame());
+    }
+}
+
+void CEffectView::slotClipTrim(int in, int out)
+{
+    do
+    {
+#if 0
+        GlobalUtinityObject* pGlobalObj = QmlTypesRegister::instance().UtinityObject();
+        if (nullptr == pGlobalObj) break;
+
+        shared_ptr<CEUMainVideoTrack> pMainTrack = pGlobalObj->GetTrackor().mainVideoTrack();
+        if (nullptr == pMainTrack) break;
+
+        pMainTrack->trimClipIn(0, in);
+        pMainTrack->trimClipOut(0, out);
+
+        int clipIndex = pMainTrack->playlist()->count()-1;
+        shared_ptr<CEUProducer> pProducer = pMainTrack->clip(clipIndex);
+
+        AppendClip(0, "1234567", pProducer);
+#endif
     } while(0);
 }

@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QQmlContext>
-
 #include "globalutinityobject.h"
 
 class QmlTypesRegister : public QObject
@@ -20,12 +19,11 @@ public:
      *
      */
     void setGlobalCariable(QQmlContext* context);
-
-    GolbalUtinityObject *UtinityObject(){return m_UtinityObject;}
+    GlobalUtinityObject *UtinityObject(){return m_UtinityObject;}
 
 private:
     explicit QmlTypesRegister(QObject *parent = nullptr);
-    GolbalUtinityObject *m_UtinityObject = nullptr;
+    GlobalUtinityObject *m_UtinityObject = nullptr;
 };
 
 #endif // QMLTYPESREGISTER_H

@@ -95,4 +95,3 @@ DESTDIR = ./../Output/Debug
 CONFIG(release,debug|release){
 DESTDIR = ./../Output/Release
 }
-

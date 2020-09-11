@@ -6,12 +6,27 @@
 #define LARGE_SCALE 12      //大刻度像素高度
 #define SMALL_SCALE 8       //小刻度像素高度
 #define FRAME_PER_SEC 30    //fps
+
+const int scaleFactor[20] = {300,270,255,240,225,210,195,180,165,150,135,120,105,90,75,60,45,30,15,1};
 CEffectHorizonHeader::CEffectHorizonHeader(QWidget *parent)
     :QHeaderView(Qt::Horizontal, parent)
-    ,m_factor(1)
+    ,m_factor(10)
+    ,m_scaleCount(0)
 {
     setSectionResizeMode(QHeaderView::Fixed);
     setFixedHeight(40);
+}
+
+void CEffectHorizonHeader::setScaleFactor(int factor)
+{
+    m_factor = factor;
+    viewport()->update();
+}
+
+double CEffectHorizonHeader::getPixelPerFrame()
+{
+    int frameCount = m_scaleCount*UNIT_FRAME*getScaleFactor();
+    return (width()-150)/(frameCount*1.0);
 }
 
 void CEffectHorizonHeader::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
@@ -48,7 +63,8 @@ void CEffectHorizonHeader::paintScale(QPainter *painter, const QRect &rect, int 
     //draw scale
     painter->setPen(QColor(53,83,111));
     int h = rect.height();
-    for (int x=rect.left(),scale=0; x<=rect.right(); x+=SCALE_UNIT, scale++)
+    int scale = 0;
+    for (int x=rect.left(); x<=rect.right(); x+=SCALE_UNIT, scale++)
     {
         bool bDrawLargeScale = !(scale%10);
         int yOffset = bDrawLargeScale?LARGE_SCALE:SMALL_SCALE;
@@ -70,18 +86,19 @@ void CEffectHorizonHeader::paintScale(QPainter *painter, const QRect &rect, int 
             painter->drawText(rtText, strTime);
         }
     }
+    m_scaleCount = scale;
     painter->restore();
 }
 
-#define HOUR_FRAME      30*60*60
-#define MINUTE_FRAME    30*60
+#define HOUR_FRAME      (30*60*60)
+#define MINUTE_FRAME    (30*60)
 #define SECOND_FRAME    30
 QString CEffectHorizonHeader::calcTimeStr(int scale) const
 {
     QString strTime;
     do
     {
-        int frames = scale*UNIT_FRAME;
+        int frames = scale*UNIT_FRAME*getScaleFactor();
         int hour=0, minute=0, second=0, frame=0;
         if (frames < SECOND_FRAME)
         {
@@ -113,4 +130,10 @@ QString CEffectHorizonHeader::calcTimeStr(int scale) const
     } while(0);
 
     return strTime;
+}
+
+int CEffectHorizonHeader::getScaleFactor() const
+{
+    if (m_factor<1 || m_factor>20) return  0;
+    return scaleFactor[m_factor-1];
 }

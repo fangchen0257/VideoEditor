@@ -63,7 +63,7 @@ void CMainWin::Layout()
         pVideoWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
         pSplitter->addWidget(pVideoWidget);
 
-        CTimeLine* pTimeLine = new CTimeLine;
+        CTimeLine* pTimeLine = new CTimeLine(QmlTypesRegister::instance().UtinityObject());
         if (nullptr == pTimeLine) break;
         pSplitter->addWidget(pTimeLine);
 

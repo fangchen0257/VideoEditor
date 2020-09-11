@@ -5,6 +5,7 @@
 #include "effecthorizonheader.h"
 #include "QtLib/box.h"
 #include "trackitem.h"
+#include "EUTractor.h"
 
 enum _TRACK_OPER_
 {
@@ -45,11 +46,19 @@ private:
     void InitTrackContainer();
 
 private:
-    void ResetTrack();
+    void AppendClip(int type, QString strText, shared_ptr<CEUProducer> pProducer);
+    QString trackItemText(QString strMediaPath);
+
+private slots:
+    void slotAddMedia2Track(int type, const QVariant& media);
+    void slotTrackItemSelect(CTrackItem* pItem);
+    void slotScaleValueChanged(int value);
+    void slotClipTrim(int in,int out);
 
 private:
     CEffectHorizonHeader* m_pEffectHeader;
     CBox* m_pHboxTrackVideo;
+    QVector<CTrackItem*> m_vecTrackItems;
 };
 
 #endif // EFFECTVIEW_H

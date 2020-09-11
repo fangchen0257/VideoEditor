@@ -42,46 +42,6 @@ int CEUTrack::clipIndex(int position)
     return nIndex;
 }
 
-string CEUTrack::xml(int clipIndex)
-{
-    string xml;
-
-    do
-    {
-        shared_ptr<Mlt::ClipInfo> info(m_playlist->clip_info(clipIndex));
-        CHECK_BREAK(!info);
-
-        xml = XML(info->cut);
-
-    } while (false);
-
-    return xml;
-}
-
-QImage CEUTrack::image(int clipIndex, int width, int height, int frameNumber)
-{
-    QImage img;
-
-    do
-    {
-        CHECK_BREAK(!m_playlist);
-
-        shared_ptr<Mlt::ClipInfo> info(m_playlist->clip_info(clipIndex));
-        CHECK_BREAK(!info);
-
-        frameNumber += info->frame_in;
-        frameNumber = min(frameNumber, info->frame_out);
-
-        shared_ptr<CEUProducer> p = clip(clipIndex);
-        CHECK_BREAK(!p);
-
-        img = p->image(width, height, frameNumber);
-
-    } while (false);
-
-    return img;
-}
-
 void CEUTrack::consolidateBlanks()
 {
     do

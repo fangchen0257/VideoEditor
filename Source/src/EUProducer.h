@@ -18,10 +18,10 @@ public:
 
     bool isAudio();
 
-    int width() { return m_producer ? m_producer->get_int("meta.media.width") : 0; }
-    int height() { return m_producer ? m_producer->get_int("meta.media.height") : 0; }
-    double fps() { return m_producer ? (m_producer->get_double("meta.media.frame_rate_num") / m_producer->get_double("meta.media.frame_rate_den")) : 0.0; }
-    int progressive() { return m_producer ? m_producer->get_int("meta.media.progressive") : 0; }
+    int width() { return m_producer ? m_producer->parent().get_int("meta.media.width") : 0; }
+    int height() { return m_producer ? m_producer->parent().get_int("meta.media.height") : 0; }
+    double fps() { return m_producer ? (m_producer->parent().get_double("meta.media.frame_rate_num") / m_producer->parent().get_double("meta.media.frame_rate_den")) : 0.0; }
+    int progressive() { return m_producer ? m_producer->parent().get_int("meta.media.progressive") : 0; }
 
     double brightnessLevel();
     void setBrightnessLevel(double value);

@@ -68,6 +68,12 @@ int CMltCtl::EUOpen (const char* url)
     {
         EUClose ();
         profileFromProducer(m_profile, url);
+
+        //手动设置帧率，避免某些视频卡顿
+        double fps = m_profile.fps() * 100;
+        int f = static_cast<int>(fps);
+        m_profile.set_frame_rate(f, 100);
+
         m_producer = CEUProducer(m_profile, url).producer();
         error = Open();
 
@@ -113,6 +119,7 @@ void CMltCtl::EUPlay ()
     
     if (m_consumer)
     {
+
         m_consumer->start();
         refreshConsumer();
     }
@@ -220,15 +227,16 @@ int CMltCtl::EUGetDuration()
 
 int CMltCtl::EUGetLength()
 {
-    int duration = 0;
+    int length = 0;
 
     do
     {
         CHECK_BREAK(!m_producer);
-        duration = m_producer->get_playtime();
+        length = m_producer->get_playtime();
+
     } while (false);
 
-    return duration;
+    return length;
 }
 
 double CMltCtl::EUGetFps()
@@ -301,7 +309,6 @@ int CMltCtl::Open()
             break;
         }
 
-        //m_consumer->set("rescale", "none");
         m_consumer->connect (*m_producer);
         m_consumer->listen ("consumer-frame-show", this, reinterpret_cast<mlt_listener>(on_frame_show));
         m_consumer->start ();

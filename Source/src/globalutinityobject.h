@@ -11,12 +11,21 @@
 #include "EUMltCtl.h"
 #include "EUTractor.h"
 
-class GolbalUtinityObject : public QObject
+typedef enum _MEDIA_ITEM_TYPE_
+{
+    MEDIA_VIDEO,
+    MEDIA_TRANSITION,
+    MEDIA_PIP,
+    MEDIA_FILTER,
+    MEDIA_TEXT,
+    MEDIA_MUSIC
+};
+class GlobalUtinityObject : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit GolbalUtinityObject(QObject *parent = nullptr);
+    explicit GlobalUtinityObject(QObject *parent = nullptr);
     Q_INVOKABLE void setTimeCtrlRect(const int x, const int y, const int width, const int height);
     Q_INVOKABLE void openFile();
     Q_INVOKABLE void stopPlay();
@@ -27,14 +36,20 @@ public:
     Q_INVOKABLE void setPlayObject(QObject *obj);
     Q_INVOKABLE void focusInTimeEdit(const int x, const int y);
     Q_INVOKABLE void addVideoToPlayView(const QVariant& fileUrl);
+    Q_INVOKABLE void addVideoToTrack(const QVariant& fileUrl);
+    Q_INVOKABLE void scaleSliderValueChanged(int value);
     void UpdateDuration(int pos, int second);
     void ReleaseFrame(FrameData data);
+    CMltCtl &GetMltCtrl();
+    CEUTractor &GetTrackor();
 
 signals:
     void timeEditFocusOut();
     void initVideoDuration(const int duration);
     void setVideoDuration(const int duration);
     void setVideoSecond(const int duration, int framenumber);
+    void sigAddMedia2Track(int type, const QVariant& fileUrl);
+    void sigScaleSliderValueChanged(int value);
 
 private:
     QRect time_ctrl_rect_;

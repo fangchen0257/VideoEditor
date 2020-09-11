@@ -26,25 +26,25 @@ void FrameRecvFun( void *szUserInfo, FrameData frame, mlt_position timePos )
 
         g_player->OnFrameGetted(frame.image,frame.width,frame.height);
     }
-    GolbalUtinityObject *obj = static_cast<GolbalUtinityObject *>(szUserInfo);
+    GlobalUtinityObject *obj = static_cast<GlobalUtinityObject *>(szUserInfo);
 
     obj->UpdateDuration(frame.pos, timePos);
     obj->ReleaseFrame(frame);
 }
 
-GolbalUtinityObject::GolbalUtinityObject(QObject *parent)
+GlobalUtinityObject::GlobalUtinityObject(QObject *parent)
     : QObject(parent)
 {
     m_MltCtrl.EUInit(this, FrameRecvFun);
     m_EUTractor.Init();
 }
 
-void GolbalUtinityObject::setTimeCtrlRect(const int x, const int y, const int width, const int height)
+void GlobalUtinityObject::setTimeCtrlRect(const int x, const int y, const int width, const int height)
 {
     time_ctrl_rect_.setRect(x, y, width, height);
 }
 
-void GolbalUtinityObject::focusInTimeEdit(const int x, const int y)
+void GlobalUtinityObject::focusInTimeEdit(const int x, const int y)
 {
     if(!time_ctrl_rect_.contains(x, y))
     {
@@ -52,7 +52,7 @@ void GolbalUtinityObject::focusInTimeEdit(const int x, const int y)
     }
 }
 
-void GolbalUtinityObject::addVideoToPlayView(const QVariant &fileUrl)
+void GlobalUtinityObject::addVideoToPlayView(const QVariant &fileUrl)
 {
   auto videoPath = fileUrl.toUrl().path();
   auto pos = videoPath.indexOf(":");
@@ -69,7 +69,17 @@ void GolbalUtinityObject::addVideoToPlayView(const QVariant &fileUrl)
   m_MltCtrl.EUPlay();
 }
 
-void GolbalUtinityObject::UpdateDuration(int pos, int second)
+void GlobalUtinityObject::addVideoToTrack(const QVariant &fileUrl)
+{
+    emit sigAddMedia2Track(MEDIA_VIDEO, fileUrl);
+}
+
+void GlobalUtinityObject::scaleSliderValueChanged(int value)
+{
+    sigScaleSliderValueChanged(value);
+}
+
+void GlobalUtinityObject::UpdateDuration(int pos, int second)
 {
     if (pos >= g_maxFrame)
     {
@@ -92,12 +102,22 @@ void GolbalUtinityObject::UpdateDuration(int pos, int second)
     emit setVideoSecond(second, f);
 }
 
-void GolbalUtinityObject::ReleaseFrame(FrameData data)
+void GlobalUtinityObject::ReleaseFrame(FrameData data)
 {
     m_MltCtrl.ReleaseFrame(data);
 }
 
-void GolbalUtinityObject::openFile()
+CMltCtl &GlobalUtinityObject::GetMltCtrl()
+{
+    return m_MltCtrl;
+}
+
+CEUTractor &GlobalUtinityObject::GetTrackor()
+{
+    return m_EUTractor;
+}
+
+void GlobalUtinityObject::openFile()
 {
     QString file = QFileDialog::getOpenFileName(nullptr,QObject::tr("select file"),QDir::currentPath(),"*.*");
 
@@ -113,14 +133,14 @@ void GolbalUtinityObject::openFile()
     m_MltCtrl.EUPlay();
 }
 
-void GolbalUtinityObject::stopPlay()
+void GlobalUtinityObject::stopPlay()
 {
     m_bPlaying = false;
     m_bStop = true;
     m_MltCtrl.EUStop();
 }
 
-void GolbalUtinityObject::seekToPos(int duration)
+void GlobalUtinityObject::seekToPos(int duration)
 {
     m_MltCtrl.EUPause();
     QMetaObject::invokeMethod(g_player, "setPause", Q_ARG(QVariant, true));
@@ -128,7 +148,7 @@ void GolbalUtinityObject::seekToPos(int duration)
     m_MltCtrl.EUSeekToPos(duration);
 }
 
-void GolbalUtinityObject::setPlay(bool play)
+void GlobalUtinityObject::setPlay(bool play)
 {
     if (m_bStop)
     {
@@ -150,18 +170,18 @@ void GolbalUtinityObject::setPlay(bool play)
     }
 }
 
-void GolbalUtinityObject::reset()
+void GlobalUtinityObject::reset()
 {
     seekToPos(0);
 }
 
-void GolbalUtinityObject::setVolume(int volume)
+void GlobalUtinityObject::setVolume(int volume)
 {
     double v = volume/100.0;
     m_MltCtrl.EUSetVolume(v);
 }
 
-void GolbalUtinityObject::setPlayObject(QObject *obj)
+void GlobalUtinityObject::setPlayObject(QObject *obj)
 {
     g_player = qobject_cast<FramePlayView *>(obj);
 }

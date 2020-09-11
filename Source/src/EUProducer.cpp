@@ -37,10 +37,10 @@ shared_ptr<Mlt::Filter> CEUProducer::getFilter(const char* id)
     {
         CHECK_BREAK(!id || !m_producer);
 
-        int nCount = m_producer->filter_count();
+        int nCount = m_producer->parent().filter_count();
         for (int i = 0; i < nCount; ++i)
         {
-            shared_ptr<Mlt::Filter> f(m_producer->filter(i));
+            shared_ptr<Mlt::Filter> f(m_producer->parent().filter(i));
             CHECK_CONTINUE(!f);
 
             const char* fid = f->get(kFilterId);
@@ -60,7 +60,7 @@ void CEUProducer::addFilter(Mlt::Filter& filter)
     do
     {
         CHECK_BREAK(!m_producer);
-        m_producer->attach(filter);
+        m_producer->parent().attach(filter);
 
     } while (false);
 }
@@ -74,7 +74,7 @@ void CEUProducer::removeFilter(const char* id)
         auto f = getFilter(id);
         CHECK_BREAK(!f);
 
-        m_producer->detach(*f);
+        m_producer->parent().detach(*f);
 
     } while (false);
 }
@@ -87,11 +87,11 @@ bool CEUProducer::isAudio()
     {
         CHECK_BREAK(!m_producer);
 
-        int n = m_producer->get_int("meta.media.nb_streams");
+        int n = m_producer->parent().get_int("meta.media.nb_streams");
         for (int i = 0; i < n; i++)
         {
             QString key = QString("meta.media.%1.stream.type").arg(i);
-            QString streamType(m_producer->get(key.toLatin1().constData()));
+            QString streamType(m_producer->parent().get(key.toLatin1().constData()));
             CHECK_CONTINUE(streamType != "video")
 
             bRet = false;
@@ -265,18 +265,23 @@ QImage CEUProducer::image(int width, int height, int frameNumber)
     {
         CHECK_BREAK(!m_producer);
 
-        const char* file = m_producer->get("resource");
-        auto producer = CEUProducer(profile, file).producer();
+        const char* file = m_producer->parent().get("resource");
+
+        Mlt::Profile tmpProfile;
+        profileFromProducer(tmpProfile, file);
+        auto producer = CEUProducer(tmpProfile, file).producer();
         CHECK_BREAK(!producer || !producer->is_valid());
 
-        Mlt::Filter scaler(profile, "swscale");
-        Mlt::Filter padder(profile, "resize");
-        Mlt::Filter converter(profile, "avcolor_space");
+        Mlt::Filter scaler(tmpProfile, "swscale");
+        Mlt::Filter padder(tmpProfile, "resize");
+        Mlt::Filter converter(tmpProfile, "avcolor_space");
         producer->attach(scaler);
         producer->attach(padder);
         producer->attach(converter);
 
-        CHECK_BREAK(!!producer->seek(frameNumber));
+        producer->set_in_and_out(m_producer->get_in(), m_producer->get_out());
+        producer->seek(frameNumber);
+
         img = ::image(producer->get_frame(), width, height);
 
     } while (false);
@@ -347,7 +352,7 @@ bool CEUProducer::addDefaultFilter()
             }
 
             filter->set(kFilterId, kDefaultBrightnessId);
-            CALL_BREAK(!m_producer->attach(*filter), bRet);
+            CALL_BREAK(!m_producer->parent().attach(*filter), bRet);
         }
 
         f = getFilter(kDefaultContrastId);
@@ -372,7 +377,7 @@ bool CEUProducer::addDefaultFilter()
             filter->set("gain_b", 1.0);
             filter->set("gamma_factor", 2.0);
             filter->set("value", 0.5);
-            CALL_BREAK(!m_producer->attach(*filter), bRet);
+            CALL_BREAK(!m_producer->parent().attach(*filter), bRet);
         }
 
         f = getFilter(kDefaultVolumneId);
@@ -382,7 +387,7 @@ bool CEUProducer::addDefaultFilter()
             FAIL_BREAK(!filter || !filter->is_valid(), bRet, false);
             filter->set(kFilterId, kDefaultVolumneId);
             filter->set("level", 0.0);
-            CALL_BREAK(!m_producer->attach(*filter), bRet);
+            CALL_BREAK(!m_producer->parent().attach(*filter), bRet);
         }
 
     } while (false);

@@ -4,7 +4,7 @@ import "../component" as QmlComponent
 
 Item{
 
-    property var videoPath: ""
+    property string videoPath: ""
     property bool mouseMoveOn: false
     property int videoId: 0
     property bool selected: false
@@ -39,6 +39,10 @@ Item{
                 buttonRect.visible = false
             }
         }
+
+        onDoubleClicked: {
+            addVideoToPlayQueue(videoPath)
+        }
     }
 
     Rectangle {
@@ -71,7 +75,7 @@ Item{
                 bgHover: "qrc:/res/videoadd_h.png"
                 bgPressed: "qrc:/res/videoadd_h.png"
                 onClicked: {
-                    addVideoToPlayQueue(videoPath)
+                    addVideoToTrack(videoPath)
                 }
             }
 
@@ -118,6 +122,10 @@ Item{
         _global_utinity_obj.addVideoToPlayView(fileUrl);
     }
 
+    function addVideoToTrack(fileUrl)
+    {
+        _global_utinity_obj.addVideoToTrack(fileUrl);
+    }
 }
 
 

@@ -209,10 +209,13 @@ Item {
                 bgHover: "qrc:/res/plus_hover_pressed.png"
                 bgPressed: "qrc:/res/plus_hover_pressed.png"
                 bgDisabled: "qrc:/res/plus_disable.png"
+                onClicked: {
+                    sliderObj.value += 1;
+                }
             }
 
             Slider {
-                id: control
+                id: sliderObj
                 anchors.verticalCenter: parent.verticalCenter
                 padding: 0
                 from: 1
@@ -221,17 +224,17 @@ Item {
                 stepSize: 1
 
                 background: Rectangle {
-                    x: control.leftPadding
-                    y: control.topPadding + control.availableHeight / 2 - height / 2
+                    x: sliderObj.leftPadding
+                    y: sliderObj.topPadding + sliderObj.availableHeight / 2 - height / 2
                     implicitWidth: 200
                     implicitHeight: 4
-                    width: control.availableWidth
+                    width: sliderObj.availableWidth
                     height: implicitHeight
                     radius: 2
                     color: "#435274"
 
                     Rectangle {
-                        width: control.visualPosition * parent.width
+                        width: sliderObj.visualPosition * parent.width
                         height: parent.height
                         color: "#0da5ef"
                         radius: 2
@@ -239,14 +242,18 @@ Item {
                 }
 
                 handle: Rectangle {
-                    x: control.leftPadding + control.visualPosition * (control.availableWidth - width)
-                    y: control.topPadding + control.availableHeight / 2 - height / 2
+                    x: sliderObj.leftPadding + sliderObj.visualPosition * (sliderObj.availableWidth - width)
+                    y: sliderObj.topPadding + sliderObj.availableHeight / 2 - height / 2
                     implicitWidth: 12
                     implicitHeight: 12
                     radius: 6
-                    color: control.hovered?"#e44c4d":(control.pressed?"#e44c4d":"#0da5ef")
+                    color: sliderObj.hovered?"#e44c4d":(sliderObj.pressed?"#e44c4d":"#0da5ef")
                     border.width: 0
 
+                }
+
+                onValueChanged: {
+                    onSliderValueChanged(sliderObj.value)
                 }
             }
 
@@ -259,6 +266,9 @@ Item {
                 bgHover: "qrc:/res/minus_hover_pressed.png"
                 bgPressed: "qrc:/res/minus_hover_pressed.png"
                 bgDisabled: "qrc:/res/minus_disable.png"
+                onClicked: {
+                    sliderObj.value -= 1
+                }
             }
         }
 
@@ -272,5 +282,10 @@ Item {
             bgPressed: "qrc:/res/auto_scale_hover_pressed.png"
             bgDisabled: "qrc:/res/auto_scale_disable.png"
         }
+    }
+
+    function onSliderValueChanged(value)
+    {
+        _global_utinity_obj.scaleSliderValueChanged(value);
     }
 }

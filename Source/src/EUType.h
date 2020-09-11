@@ -44,7 +44,7 @@ typedef enum {
 #define kHasDefaultFilter "hasDefaultFilter"
 #define kSubVideo "subVideo"
 
-#define kDefaultMltProfile "atsc_1080p_25"
+#define kDefaultMltProfile "atsc_1080p_30"
 #define kDefaultTransition "lumaMix"
 #define kDefaultBrightnessId "defaultBrightness20200909"
 #define kDefaultContrastId "defaultContrast20200909"

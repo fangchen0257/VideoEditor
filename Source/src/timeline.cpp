@@ -1,11 +1,13 @@
 #include "timeline.h"
 #include <QVBoxLayout>
 #include <QtQuickWidgets/QtQuickWidgets>
+#include "qmltypesregister.h"
 
 #define MINIZIM_HEIGHT 150
-CTimeLine::CTimeLine(QWidget *parent)
+CTimeLine::CTimeLine(GlobalUtinityObject* pGlobalObject, QWidget *parent)
     :QWidget(parent)
     ,m_pEffectView(nullptr)
+    ,m_pGlobalObject(pGlobalObject)
 {
     Layout();
 }
@@ -23,6 +25,8 @@ void CTimeLine::Layout()
 
         QQuickWidget* pOperWidget = new QQuickWidget;
         if (nullptr == pOperWidget) break;
+        QQmlContext* pContext = pOperWidget->rootContext();
+        QmlTypesRegister::instance().setGlobalCariable(pContext);
         pOperWidget->setFixedHeight(45);
         pOperWidget->setSource((QUrl("qrc:/qmls/timeline/TrackHeader.qml")));
         pOperWidget->setResizeMode(QQuickWidget::SizeRootObjectToView);
@@ -30,6 +34,8 @@ void CTimeLine::Layout()
 
         m_pEffectView = new CEffectView(ROW_CNT-1,COL_CNT);
         if (nullptr == m_pEffectView) break;
+        connect(m_pGlobalObject, SIGNAL(sigAddMedia2Track(int,const QVariant&)), m_pEffectView, SLOT(slotAddMedia2Track(int,const QVariant&)));
+        connect(m_pGlobalObject, SIGNAL(sigScaleSliderValueChanged(int)), m_pEffectView, SLOT(slotScaleValueChanged(int)));
         pVboxMain->addWidget(m_pEffectView);
     } while(0);
 }

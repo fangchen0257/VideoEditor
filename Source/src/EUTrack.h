@@ -15,8 +15,6 @@ public:
     shared_ptr<CEUProducer> clip(int clipIndex);
 
     int clipIndex(int position);
-    string xml(int clipIndex);
-    QImage image(int clipIndex, int width, int height, int frameNumber = 0);
 
 protected:
     void consolidateBlanks();
