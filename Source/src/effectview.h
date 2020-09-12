@@ -6,6 +6,7 @@
 #include "QtLib/box.h"
 #include "trackitem.h"
 #include "EUTractor.h"
+#include "QtLib/public.h"
 
 enum _TRACK_OPER_
 {
@@ -46,14 +47,18 @@ private:
     void InitTrackContainer();
 
 private:
-    void AppendClip(int type, QString strText, shared_ptr<CEUProducer> pProducer);
+    void AppendClip(int type, QString strText, QImage imgThumb, shared_ptr<Mlt::ClipInfo> clipInfo);
     QString trackItemText(QString strMediaPath);
+    void SelectItem(CTrackItem* pCurItem);
+    void RefreshTrackItems(int type, shared_ptr<CEUMainVideoTrack> pMainTrack);
+    void DeleteTrackItems(QVector<CTrackItem*>& vecTrackItems);
 
 private slots:
     void slotAddMedia2Track(int type, const QVariant& media);
     void slotTrackItemSelect(CTrackItem* pItem);
     void slotScaleValueChanged(int value);
-    void slotClipTrim(int in,int out);
+    void slotClipTrim(CTrackItem* pItem, int in,int out);
+    void slotClipMove(CTrackItem* pItem, int clipIndex, int position);
 
 private:
     CEffectHorizonHeader* m_pEffectHeader;

@@ -254,7 +254,14 @@ void CEUProducer::setVolume(double value)
 
 string CEUProducer::xml()
 {
-    return XML(m_producer.get());
+    string strXmlOrUrl = "";
+    do
+    {
+        CHECK_BREAK(!m_producer);
+        strXmlOrUrl = m_producer->parent().get("resource");
+    } while(0);
+
+    return strXmlOrUrl;
 }
 
 QImage CEUProducer::image(int width, int height, int frameNumber)

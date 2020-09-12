@@ -56,6 +56,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    src/QtLib/public.h \
     src/globalutinityobject.h \
     src/qmltypesregister.h \
     src\framelrender.h \

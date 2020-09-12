@@ -4,15 +4,15 @@
 #include <qlabel.h>
 #include <qpainter.h>
 
-#define IMG_THUMB_W 55
-#define IMG_THUMB_H 30
-CTrackItem::CTrackItem(TRACK_TYPE type, QString strText, shared_ptr<CEUProducer> pProducer, QWidget *parent)
+CTrackItem::CTrackItem(TRACK_TYPE type, QString strText, QImage imgThumb, shared_ptr<Mlt::ClipInfo> clipInfo, QWidget *parent)
     :QWidget(parent)
-    ,m_pProducer(pProducer)
+    ,m_clipInfo(clipInfo)
+    ,m_imgThumb(imgThumb)
     ,m_clrBg(QColor(0,187,244))
     ,m_strText(strText)
     ,m_type(type)
     ,m_pLabText(nullptr)
+    ,m_pLabThumb(nullptr)
     ,m_bSelected(false)
     ,m_bIsPressed(false)
     ,m_bIsLeftTrimPressed(false)
@@ -22,9 +22,11 @@ CTrackItem::CTrackItem(TRACK_TYPE type, QString strText, shared_ptr<CEUProducer>
     ,m_pLabTrimRight(nullptr)
     ,m_pItemShadow(nullptr)
 {
-    if (nullptr != m_pProducer)
+    if (nullptr != m_clipInfo)
     {
-        m_frmWidth = m_pProducer->producer()->get_playtime();
+        m_frameLength = m_clipInfo->length;
+        m_curFrameCount = m_clipInfo->frame_count;
+        m_position = m_clipInfo->start;
     }
     Layout();
 }
@@ -47,18 +49,12 @@ void CTrackItem::SetBg(QColor clrBg)
     update();
 }
 
-void CTrackItem::ResetPixelPerFrame(double pixelPerFrm)
+int CTrackItem::ResetPixelPerFrame(double pixelPerFrm)
 {
     m_pixelPerFrm = pixelPerFrm;
-    int width = static_cast<int>(m_frmWidth*pixelPerFrm);
-    setFixedWidth(width);
-    ResetTrims();
-    ResetMediaText();
-    if (nullptr != m_pItemShadow) {
-        m_pItemShadow->setFixedSize(size());
-    }
+    ResetItem(pixelPerFrm);
 
-    update();
+    return width();
 }
 
 void CTrackItem::showEvent(QShowEvent *pEvent)
@@ -85,10 +81,9 @@ void CTrackItem::paintEvent(QPaintEvent *pEvent)
 
 void CTrackItem::mousePressEvent(QMouseEvent *pEvent)
 {
-    m_bSelected = true;
     m_bIsPressed = true;
     m_ptRelative = pEvent->pos();
-    ResetTrims();
+    m_wndPos = pos();
     emit sigItemSelect(this);
 
     QWidget::mousePressEvent(pEvent);
@@ -97,6 +92,11 @@ void CTrackItem::mousePressEvent(QMouseEvent *pEvent)
 void CTrackItem::mouseReleaseEvent(QMouseEvent *pEvent)
 {
     m_bIsPressed = false;
+    QPoint ptCurrent = pos();
+    if (ptCurrent != m_wndPos)
+    {
+        OnItemMoveFinish((ptCurrent-m_wndPos).x());
+    }
     QWidget::mouseReleaseEvent(pEvent);
 }
 
@@ -111,8 +111,10 @@ void CTrackItem::mouseMoveEvent(QMouseEvent *pEvent)
 
             int x = ptPos.x()+xOffset;
             int y = ptPos.y();
-            qDebug() << "x:" << x << "y:" << y;
-            if (x >= 0){ move(x,y); }
+            if (x >= 0)
+            {
+                move(x,y);
+            }
         }
     } while(0);
 
@@ -152,12 +154,12 @@ void CTrackItem::Layout()
         pHboxMain->setContentsMargins(5,2,0,2);
         setLayout(pHboxMain);
 
-        QPixmap pmThumb = QPixmap::fromImage(clipImage());
-        QLabel* pLabThumb = new QLabel;
-        if (nullptr == pLabThumb) break;
-        pLabThumb->setPixmap(pmThumb);
-        pLabThumb->setFixedSize(pmThumb.size());
-        pHboxMain->addWidget(pLabThumb);
+        QPixmap pmThumb = QPixmap::fromImage(m_imgThumb);
+        m_pLabThumb = new QLabel;
+        if (nullptr == m_pLabThumb) break;
+        m_pLabThumb->setPixmap(pmThumb);
+        m_pLabThumb->setFixedSize(pmThumb.size());
+        pHboxMain->addWidget(m_pLabThumb);
 
         m_pLabText = new QLabel(m_strText);
         if (nullptr == m_pLabText) break;
@@ -182,7 +184,7 @@ void CTrackItem::InitTrims()
 
 void CTrackItem::InitShadowItem()
 {
-    m_pItemShadow = new CItemShadow(QColor(0,0,0,127), this);
+    m_pItemShadow = new CItemShadow;
     if (nullptr != m_pItemShadow)
     {
         m_pItemShadow->setVisible(false);
@@ -215,16 +217,9 @@ void CTrackItem::ResetTrims()
 
         m_pLabTrimLeft->setVisible(m_bSelected);
         m_pLabTrimRight->setVisible(m_bSelected);
-        m_pLabTrimLeft->move(0,1);
-        m_pLabTrimRight->move(width() - m_pLabTrimRight->width(), 1);
+        m_pLabTrimLeft->move(0, 0);
+        m_pLabTrimRight->move(width()-m_pLabTrimRight->width(), 0);
     } while(0);
-}
-
-QImage CTrackItem::clipImage()
-{
-    if (nullptr == m_pProducer) return QImage();
-    QImage imgThumb = m_pProducer->image(IMG_THUMB_W,IMG_THUMB_H);
-    return imgThumb;
 }
 
 void CTrackItem::ResetMediaText()
@@ -238,6 +233,77 @@ void CTrackItem::ResetMediaText()
     QFontMetrics fm(font);
     QString strText = fm.elidedText(m_strText, Qt::ElideRight, itemWidth-IMG_THUMB_W-xOffset);
     m_pLabText->setText(strText);
+}
+
+void CTrackItem::ResetThumb()
+{
+    if (nullptr != m_pLabThumb)
+    {
+        QPixmap pm = QPixmap::fromImage(m_imgThumb);
+        m_pLabThumb->setPixmap(pm);
+        m_pLabThumb->setFixedSize(pm.size());
+    }
+}
+
+void CTrackItem::ResetGeometry(double pixelPerFrame)
+{
+    int width = static_cast<int>(m_curFrameCount*pixelPerFrame);
+    move(m_position*pixelPerFrame, 5);
+    setFixedWidth(width);
+}
+
+void CTrackItem::ResetItem(double pixelPerFrame)
+{
+    ResetGeometry(pixelPerFrame);
+    ResetTrims();
+    ResetMediaText();
+    ResetThumb();
+    update();
+}
+
+shared_ptr<Mlt::ClipInfo> CTrackItem::GetClipInfo()
+{
+    return m_clipInfo;
+}
+
+TRACK_TYPE CTrackItem::type()
+{
+    return m_type;
+}
+
+void CTrackItem::ResetItem(shared_ptr<Mlt::ClipInfo> clipInfo, QImage imgThumb)
+{
+    m_imgThumb = imgThumb;
+    m_clipInfo = clipInfo;
+    if (nullptr != m_clipInfo)
+    {
+        m_curFrameCount = m_clipInfo->frame_count;
+    }
+
+    ResetItem(m_pixelPerFrm);
+}
+
+void CTrackItem::DeleteItem()
+{
+
+}
+
+QRect CTrackItem::calcGeometry(QPoint pt, bool bRightTrim)
+{
+    QRect rtGeometry;
+
+    QPoint ptGlobal = mapToGlobal(QPoint(0,0));
+    rtGeometry.setTopLeft(ptGlobal);
+    if (bRightTrim)
+    {
+        rtGeometry.setSize(QSize(width()+pt.x(),height()));
+    }
+    else
+    {
+        rtGeometry.setSize(QSize(width()-pt.x(),height()));
+    }
+
+    return rtGeometry;
 }
 
 bool CTrackItem::HandleLeftTrimEvent(QEvent *pEvent)
@@ -256,13 +322,20 @@ bool CTrackItem::HandleLeftTrimEvent(QEvent *pEvent)
             }
             else if (type == QEvent::MouseButtonRelease)
             {
-                m_bIsLeftTrimPressed = false;
+                OnLeftTrimMouseRelease();
             }
             else
             {
-                QMouseEvent* pMouseEvent = dynamic_cast<QMouseEvent*>(pEvent);
-                QPoint pt = pMouseEvent->pos();
-                qDebug() << "x:" << pt.x() << "y:" << pt.y();
+                if (m_bIsLeftTrimPressed)
+                {
+                    QMouseEvent* pMouseEvent = dynamic_cast<QMouseEvent*>(pEvent);
+                    QPoint pt = pMouseEvent->pos();
+                    QRect rtGeometry = calcGeometry(pt, false);
+
+                    m_pItemShadow->setVisible(true);
+                    m_pItemShadow->move(rtGeometry.topLeft());
+                    m_pItemShadow->setFixedSize(rtGeometry.size());
+                }
             }
             bHandled = true;
         }
@@ -276,7 +349,7 @@ bool CTrackItem::HandleRightTrimEvent(QEvent *pEvent)
     bool bHandled = false;
     do
     {
-        if (nullptr == pEvent) break;
+        if (nullptr==pEvent || nullptr==m_pItemShadow) break;
 
         QEvent::Type type = pEvent->type();
         if (type==QEvent::MouseButtonPress || type==QEvent::MouseButtonRelease || type==QEvent::MouseMove)
@@ -287,20 +360,19 @@ bool CTrackItem::HandleRightTrimEvent(QEvent *pEvent)
             }
             else if (type == QEvent::MouseButtonRelease)
             {
-                if (nullptr != m_pItemShadow) {
-                    m_pItemShadow->setVisible(false);
-                }
-                emit sigClipTrim(0,1000);
-                m_bIsRightTrimPressed = false;
+               OnRightTrimMouseRelease();
             }
             else
             {
-                QMouseEvent* pMouseEvent = dynamic_cast<QMouseEvent*>(pEvent);
-                QPoint pt = pMouseEvent->pos();
-                if (nullptr != m_pItemShadow)
+                if (m_bIsRightTrimPressed)
                 {
+                    QMouseEvent* pMouseEvent = dynamic_cast<QMouseEvent*>(pEvent);
+                    QPoint pt = pMouseEvent->pos();
+                    QRect rtGeometry = calcGeometry(pt, true);
+
                     m_pItemShadow->setVisible(true);
-                    m_pItemShadow->setFixedWidth(width()+pt.x());
+                    m_pItemShadow->move(rtGeometry.topLeft());
+                    m_pItemShadow->setFixedSize(rtGeometry.size());
                 }
             }
             bHandled = true;
@@ -310,9 +382,75 @@ bool CTrackItem::HandleRightTrimEvent(QEvent *pEvent)
     return bHandled;
 }
 
+void CTrackItem::OnLeftTrimMouseRelease()
+{
+    do
+    {
+        m_bIsLeftTrimPressed = false;
+        if (nullptr != m_pItemShadow)
+        {
+            m_pItemShadow->setVisible(false);
+        }
+
+        int currentW = m_pItemShadow->width();
+        if (0 == currentW)
+        {
+            DeleteItem();
+            break;
+        }
+
+        int frame = static_cast<int>(currentW/m_pixelPerFrm);
+        if (frame >= m_frameLength)
+        {
+            frame = m_frameLength;
+        }
+
+        int in = m_curFrameCount - frame;
+        emit sigClipTrim(this, in, 0);
+    } while(0);
+}
+
+void CTrackItem::OnRightTrimMouseRelease()
+{
+    do
+    {
+        m_bIsRightTrimPressed = false;
+        if (nullptr != m_pItemShadow)
+        {
+            m_pItemShadow->setVisible(false);
+        }
+
+        int currentW = m_pItemShadow->width();
+        if (0 == currentW)
+        {
+            DeleteItem();
+            break;
+        }
+
+        int frame = static_cast<int>(currentW/m_pixelPerFrm);
+        if (frame >= m_frameLength)
+        {
+            frame = m_frameLength;
+        }
+
+        int out = m_curFrameCount - frame;
+        emit sigClipTrim(this, 0, out);
+    } while(0);
+}
+
+void CTrackItem::OnItemMoveFinish(int xOffset)
+{
+    if (nullptr==m_clipInfo || 0.0==m_pixelPerFrm) return;
+
+    int clipIndex = m_clipInfo->clip;
+    int position = m_position+xOffset/m_pixelPerFrm;
+    qDebug() << "OnItemMoveFinish" << clipIndex << position << xOffset << m_pixelPerFrm;
+
+    emit sigMoveClip(this, clipIndex, position);
+}
 
 CItemShadow::CItemShadow(QColor clgBg, QWidget *parent)
-    :QWidget(parent)
+    :QWidget(parent, Qt::FramelessWindowHint|Qt::Tool)
     ,m_clgBg(clgBg)
 {
     setAttribute(Qt::WA_TranslucentBackground, true);
@@ -326,5 +464,5 @@ void CItemShadow::paintEvent(QPaintEvent *pEvent)
     paint.setRenderHint(QPainter::Antialiasing, true);
     paint.setPen(Qt::NoPen);
     paint.setBrush(m_clgBg);
-    paint.drawRoundedRect(rect(), 4.0, 4.0);
+    paint.drawRect(rect());
 }
