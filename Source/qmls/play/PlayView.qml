@@ -85,7 +85,7 @@ Item {
         anchors.left: parent.left
         height: parent.height  - contrlHeight
         width: parent.width
-        color: "#404040"
+        color: "#181c26"
         onWidthChanged: {
             //calcRenderWidth(width, height)
             //renderView.calcRenderSize(renderView.m_width,renderView.m_height)
@@ -124,7 +124,7 @@ Item {
         anchors.left: parent.left
         height: contrlHeight
         width: parent.width
-        color: "#484848"
+        color: "#293142"
 
         Row {
             id: rowLayout

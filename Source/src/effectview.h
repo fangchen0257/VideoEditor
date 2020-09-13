@@ -15,13 +15,6 @@ enum _TRACK_OPER_
     OPER_LOCK
 };
 
-enum _COLUMN_ITEMS_
-{
-    COL_EFFECT_NAME,
-    COL_OPERA_REGION,
-    COL_CNT
-};
-
 enum _ROW_ITEMS_
 {
     ROW_VIDEO,
@@ -40,11 +33,15 @@ public:
     CEffectView(QWidget* parent = nullptr);
     CEffectView(int row, int column, QWidget* parent = nullptr);
 
+protected:
+    void showEvent(QShowEvent* pEvent);
+
 private:
     void Layout();
     void InitFirstColumn();
     CBox* InitCellItem(QString strIcon, QString strText, QVector<QString> vecResLock, QVector<QString> vecVisible, QVector<QString> vecMute);
     void InitTrackContainer();
+    void InitShadowItem();
 
 private:
     void AppendClip(int type, QString strText, QImage imgThumb, shared_ptr<Mlt::ClipInfo> clipInfo);
@@ -52,6 +49,10 @@ private:
     void SelectItem(CTrackItem* pCurItem);
     void RefreshTrackItems(int type, shared_ptr<CEUMainVideoTrack> pMainTrack);
     void DeleteTrackItems(QVector<CTrackItem*>& vecTrackItems);
+    void ResetColumnWidth();
+
+signals:
+    void sigColumnWidthChanged(int);
 
 private slots:
     void slotAddMedia2Track(int type, const QVariant& media);
@@ -63,7 +64,9 @@ private slots:
 private:
     CEffectHorizonHeader* m_pEffectHeader;
     CBox* m_pHboxTrackVideo;
+    CItemShadow* m_pItemShadow;
     QVector<CTrackItem*> m_vecTrackItems;
+    int m_operColumnWidth;
 };
 
 #endif // EFFECTVIEW_H

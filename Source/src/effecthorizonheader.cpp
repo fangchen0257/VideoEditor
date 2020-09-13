@@ -1,5 +1,7 @@
 #include "effecthorizonheader.h"
+#include "effectview.h"
 #include <qpainter.h>
+#include <qdebug.h>
 
 #define SCALE_UNIT 10       //最小刻度对应的像素宽度
 #define UNIT_FRAME 3        //最小刻度对应的帧数
@@ -10,6 +12,7 @@
 const int scaleFactor[20] = {300,270,255,240,225,210,195,180,165,150,135,120,105,90,75,60,45,30,15,1};
 CEffectHorizonHeader::CEffectHorizonHeader(QWidget *parent)
     :QHeaderView(Qt::Horizontal, parent)
+    ,m_pParent(parent)
     ,m_factor(10)
     ,m_scaleCount(0)
 {
@@ -25,8 +28,20 @@ void CEffectHorizonHeader::setScaleFactor(int factor)
 
 double CEffectHorizonHeader::getPixelPerFrame()
 {
-    int frameCount = m_scaleCount*UNIT_FRAME*getScaleFactor();
-    return (width()-150)/(frameCount*1.0);
+    double fPixelPerFrame = 0.0;
+    do
+    {
+        CEffectView* pEffectView = dynamic_cast<CEffectView*>(m_pParent);
+        if (nullptr == pEffectView) break;
+
+        int frameCount = m_scaleCount*UNIT_FRAME*getScaleFactor();
+        int width = pEffectView->columnWidth(COL_OPERA_REGION);
+        qDebug() << "frame count：" << frameCount << "width:" << width;
+
+        fPixelPerFrame = (width-FIRST_COLUMN_WIDTH)/(frameCount*1.0);
+    } while(0);
+
+    return fPixelPerFrame;
 }
 
 void CEffectHorizonHeader::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const

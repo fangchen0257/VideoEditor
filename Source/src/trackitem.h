@@ -39,7 +39,8 @@ public:
     bool IsSelect();
     void SetSelect(bool bSelect);
     void SetBg(QColor clrBg);
-    int  ResetPixelPerFrame(double pixelPerFrm);
+    void SetShadowItem(CItemShadow* pItemShadow);
+    void ResetPixelPerFrame(double pixelPerFrm);
     void ResetItem(double pixelPerFrame);
     void ResetItem(shared_ptr<Mlt::ClipInfo> clipInfo, QImage imgThumb);
     shared_ptr<Mlt::ClipInfo> GetClipInfo();
@@ -56,7 +57,6 @@ protected:
 private:
     void Layout();
     void InitTrims();
-    void InitShadowItem();
     QLabel* Init1Trim(QString strPm);
     void ResetTrims();
     void ResetMediaText();

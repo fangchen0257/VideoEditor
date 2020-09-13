@@ -2,6 +2,15 @@
 #define EFFECTHORIZONHEADER_H
 
 #include <qheaderview.h>
+
+enum _COLUMN_ITEMS_
+{
+    COL_EFFECT_NAME,
+    COL_OPERA_REGION,
+    COL_CNT
+};
+
+#define FIRST_COLUMN_WIDTH 150
 class CEffectHorizonHeader : public QHeaderView
 {
 public:
@@ -18,6 +27,7 @@ private:
     int getScaleFactor() const;
 
 private:
+    QWidget* m_pParent;
     int m_factor;
     mutable int m_scaleCount;
 };

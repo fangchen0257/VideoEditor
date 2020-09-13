@@ -13,6 +13,8 @@ CEffectView::CEffectView(QWidget* parent)
     :QTableWidget(parent)
     ,m_pEffectHeader(nullptr)
     ,m_pHboxTrackVideo(nullptr)
+    ,m_pItemShadow(nullptr)
+    ,m_operColumnWidth(0)
 {
     Layout();
 }
@@ -23,13 +25,23 @@ CEffectView::CEffectView(int row, int column, QWidget *parent)
     Layout();
 }
 
+void CEffectView::showEvent(QShowEvent *pEvent)
+{
+    m_operColumnWidth = columnWidth(COL_OPERA_REGION);
+    qDebug() << "m_operColumnWidth : " << m_operColumnWidth;
+
+    QTableWidget::showEvent(pEvent);
+}
+
 void CEffectView::Layout()
 {
     do
     {
-        m_pEffectHeader = new CEffectHorizonHeader;
+        m_pEffectHeader = new CEffectHorizonHeader(this);
         if (nullptr == m_pEffectHeader) break;
         setHorizontalHeader(m_pEffectHeader);
+        setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+        setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
         verticalHeader()->setVisible(false);
         horizontalHeader()->setStretchLastSection(true);
@@ -50,6 +62,7 @@ void CEffectView::Layout()
 
         InitFirstColumn();
         InitTrackContainer();
+        InitShadowItem();
     } while(0);
 }
 
@@ -160,9 +173,17 @@ void CEffectView::InitTrackContainer()
         m_pHboxTrackVideo = new CBox(false);
         if (nullptr == m_pHboxTrackVideo) break;
         m_pHboxTrackVideo->SetMargins(0,5,0,0);
-        m_pHboxTrackVideo->SetDrawFrame(true);
         setCellWidget(ROW_VIDEO,1,m_pHboxTrackVideo);
     } while(0);
+}
+
+void CEffectView::InitShadowItem()
+{
+    m_pItemShadow = new CItemShadow(QColor(0,0,0,127), m_pHboxTrackVideo);
+    if (nullptr != m_pItemShadow)
+    {
+        m_pItemShadow->setVisible(false);
+    }
 }
 
 void CEffectView::AppendClip(int type, QString strText, QImage imgThumb, shared_ptr<Mlt::ClipInfo> clipInfo)
@@ -173,6 +194,7 @@ void CEffectView::AppendClip(int type, QString strText, QImage imgThumb, shared_
 
         CTrackItem* pTrackItem = new CTrackItem(TRACK_TYPE(type), strText, imgThumb, clipInfo, m_pHboxTrackVideo);
         if (nullptr == pTrackItem) break;
+        pTrackItem->SetShadowItem(m_pItemShadow);
         connect(pTrackItem, SIGNAL(sigItemSelect(CTrackItem*)), this, SLOT(slotTrackItemSelect(CTrackItem*)));
         connect(pTrackItem, SIGNAL(sigClipTrim(CTrackItem*,int,int)), this, SLOT(slotClipTrim(CTrackItem*,int,int)));
         connect(pTrackItem, SIGNAL(sigMoveClip(CTrackItem*,int,int)), this, SLOT(slotClipMove(CTrackItem*,int,int)));
@@ -199,9 +221,16 @@ void CEffectView::SelectItem(CTrackItem *pCurItem)
     for (int i=0,iEnd=m_vecTrackItems.size(); i<iEnd; ++i)
     {
         CTrackItem* pItem = m_vecTrackItems[i];
-        if (nullptr != pItem)
+        if (nullptr == pItem) continue;
+
+        if (pItem == pCurItem)
         {
-            pItem->SetSelect(pItem==pCurItem);
+            pItem->SetSelect(true);
+        }
+        else
+        {
+            pItem->stackUnder(pCurItem);
+            pItem->SetSelect(false);
         }
     }
 }
@@ -245,6 +274,27 @@ void CEffectView::DeleteTrackItems(QVector<CTrackItem *> &vecTrackItems)
     m_vecTrackItems.clear();
 }
 
+void CEffectView::ResetColumnWidth()
+{
+    int itemTotalWidth = 0;
+    for (int i=0,iEnd=m_vecTrackItems.size(); i<iEnd; ++i)
+    {
+        CTrackItem* pItem = m_vecTrackItems[i];
+        if (nullptr != pItem)
+        {
+            itemTotalWidth += pItem->width();
+        }
+    }
+    qDebug() << "clip total width:" << itemTotalWidth;
+
+    if (itemTotalWidth <= m_operColumnWidth)
+    {
+        itemTotalWidth = m_operColumnWidth;
+    }
+    setColumnWidth(COL_OPERA_REGION, itemTotalWidth);
+    emit sigColumnWidthChanged(itemTotalWidth);
+}
+
 void CEffectView::slotAddMedia2Track(int type, const QVariant &media)
 {
     do
@@ -276,6 +326,7 @@ void CEffectView::slotAddMedia2Track(int type, const QVariant &media)
 
         QImage imgThumb = pMainTrack->clip(clipIndex)->image(IMG_THUMB_W, IMG_THUMB_H);
         AppendClip(type, trackItemText(mediaPath), imgThumb, clipInfo);
+        ResetColumnWidth();
     } while(0);
 }
 
@@ -302,23 +353,20 @@ void CEffectView::slotTrackItemSelect(CTrackItem *pItem)
 void CEffectView::slotScaleValueChanged(int value)
 {
     if (nullptr == m_pEffectHeader) return;
-    m_pEffectHeader->setScaleFactor(value);
 
-    int totalWidth = 0;
+    m_pEffectHeader->setScaleFactor(value);
+    double pixePerFrame = m_pEffectHeader->getPixelPerFrame();
+    qDebug() << "value" << value << "pixePerFrame : " << pixePerFrame;
+
     for (int i=0,iEnd=m_vecTrackItems.size(); i<iEnd; ++i)
     {
         CTrackItem* pItem = m_vecTrackItems[i];
         if (nullptr == pItem) continue;
 
-        double pixePerFrame = m_pEffectHeader->getPixelPerFrame();
-        totalWidth += (pItem->ResetPixelPerFrame(pixePerFrame));
+        pItem->ResetPixelPerFrame(pixePerFrame);
     }
 
-    qDebug() << "total width:" << totalWidth;
-    if (nullptr!=m_pHboxTrackVideo && m_pHboxTrackVideo->width() < totalWidth)
-    {
-        m_pHboxTrackVideo->setFixedWidth(totalWidth);
-    }
+    ResetColumnWidth();
 }
 
 void CEffectView::slotClipTrim(CTrackItem* pItem, int in, int out)

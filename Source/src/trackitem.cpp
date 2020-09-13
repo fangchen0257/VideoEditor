@@ -49,12 +49,16 @@ void CTrackItem::SetBg(QColor clrBg)
     update();
 }
 
-int CTrackItem::ResetPixelPerFrame(double pixelPerFrm)
+void CTrackItem::SetShadowItem(CItemShadow *pItemShadow)
+{
+    m_pItemShadow = pItemShadow;
+    stackUnder(m_pItemShadow);
+}
+
+void CTrackItem::ResetPixelPerFrame(double pixelPerFrm)
 {
     m_pixelPerFrm = pixelPerFrm;
     ResetItem(pixelPerFrm);
-
-    return width();
 }
 
 void CTrackItem::showEvent(QShowEvent *pEvent)
@@ -172,7 +176,6 @@ void CTrackItem::Layout()
         setCursor(QCursor(Qt::OpenHandCursor));
 
         InitTrims();
-        InitShadowItem();
     } while(0);
 }
 
@@ -180,15 +183,6 @@ void CTrackItem::InitTrims()
 {
     m_pLabTrimLeft = Init1Trim(":/res/trim_left.png");
     m_pLabTrimRight = Init1Trim(":/res/trim_right.png");
-}
-
-void CTrackItem::InitShadowItem()
-{
-    m_pItemShadow = new CItemShadow;
-    if (nullptr != m_pItemShadow)
-    {
-        m_pItemShadow->setVisible(false);
-    }
 }
 
 QLabel *CTrackItem::Init1Trim(QString strPm)
@@ -292,7 +286,7 @@ QRect CTrackItem::calcGeometry(QPoint pt, bool bRightTrim)
 {
     QRect rtGeometry;
 
-    QPoint ptGlobal = mapToGlobal(QPoint(0,0));
+    QPoint ptGlobal = mapToParent(QPoint(0,0));
     rtGeometry.setTopLeft(ptGlobal);
     if (bRightTrim)
     {
@@ -450,7 +444,7 @@ void CTrackItem::OnItemMoveFinish(int xOffset)
 }
 
 CItemShadow::CItemShadow(QColor clgBg, QWidget *parent)
-    :QWidget(parent, Qt::FramelessWindowHint|Qt::Tool)
+    :QWidget(parent, Qt::FramelessWindowHint)
     ,m_clgBg(clgBg)
 {
     setAttribute(Qt::WA_TranslucentBackground, true);

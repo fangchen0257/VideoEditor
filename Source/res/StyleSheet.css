@@ -57,3 +57,57 @@ QScrollBar::sub-line:vertical
     subcontrol-position: -180;
     width: 0px;
 }
+
+/*QScrollBar horizontal*/
+QScrollBar:horizontal
+{
+    height:10px;
+    background:  #212735;
+    margin: 0px, 0px, 0px, 0px;
+    padding-top: 0px;
+    padding-bottom:0px;
+}
+
+QScrollBar::handle:horizontal
+{
+    height:10px;
+    background: #0da5ef;
+    min-width: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar::add-page:horizontal,QScrollBar::sub-page:horizontal
+{
+    background: #212735;
+}
+QScrollBar::up-arrow:horizontal,QScrollBar::down-arrow:horizontal
+{
+    border :none;
+    background: transparent;
+}
+
+QScrollBar::handle:horizontal:hover
+{
+    background:#21c8fb;
+}
+
+QScrollBar::handle:horizontal:pressed
+{
+    background:#21c8fb;
+}
+
+QScrollBar::add-line:horizontal /*Èý½Ç¼ýÍ·*/
+{
+    border : none;
+    background: none;
+    subcontrol-position: -180;
+    width: 0px;
+}
+
+QScrollBar::sub-line:horizontal
+{
+    border : none;
+    background: none;
+    subcontrol-position: -180;
+    width: 0px;
+}
