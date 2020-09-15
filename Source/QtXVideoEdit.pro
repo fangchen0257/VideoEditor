@@ -16,6 +16,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         src/globalutinityobject.cpp \
         src/qmltypesregister.cpp \
+    src/tracksplit.cpp \
         src\framelrender.cpp \
         src\frameplayview.cpp \
         main.cpp \
@@ -59,6 +60,7 @@ HEADERS += \
     src/QtLib/public.h \
     src/globalutinityobject.h \
     src/qmltypesregister.h \
+    src/tracksplit.h \
     src\framelrender.h \
     src\frameplayview.h \
     src/EUMltCtl.h \

@@ -7,6 +7,7 @@
 #include "trackitem.h"
 #include "EUTractor.h"
 #include "QtLib/public.h"
+#include "tracksplit.h"
 
 enum _TRACK_OPER_
 {
@@ -35,6 +36,7 @@ public:
 
 protected:
     void showEvent(QShowEvent* pEvent);
+    void resizeEvent(QResizeEvent* pEvent);
 
 private:
     void Layout();
@@ -42,6 +44,7 @@ private:
     CBox* InitCellItem(QString strIcon, QString strText, QVector<QString> vecResLock, QVector<QString> vecVisible, QVector<QString> vecMute);
     void InitTrackContainer();
     void InitShadowItem();
+    void InitSpliter();
 
 private:
     void AppendClip(int type, QString strText, QImage imgThumb, shared_ptr<Mlt::ClipInfo> clipInfo);
@@ -50,6 +53,7 @@ private:
     void RefreshTrackItems(int type, shared_ptr<CEUMainVideoTrack> pMainTrack);
     void DeleteTrackItems(QVector<CTrackItem*>& vecTrackItems);
     void ResetColumnWidth();
+    void ResetSpliter(bool bVisible);
 
 signals:
     void sigColumnWidthChanged(int);
@@ -61,8 +65,11 @@ private slots:
     void slotClipTrim(CTrackItem* pItem, int in,int out);
     void slotClipMove(CTrackItem* pItem, int clipIndex, int position);
     void slotItemDelete(CTrackItem* pItem);
+    void slotSpliterMove(int x, int y);
+    void slotSpliterBtnClicked(int x);
 
 private:
+    CTrackSplit* m_pSpliter;
     CEffectHorizonHeader* m_pEffectHeader;
     CBox* m_pHboxTrackVideo;
     CItemShadow* m_pItemShadow;

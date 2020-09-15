@@ -11,6 +11,7 @@
 
 CEffectView::CEffectView(QWidget* parent)
     :QTableWidget(parent)
+    ,m_pSpliter(nullptr)
     ,m_pEffectHeader(nullptr)
     ,m_pHboxTrackVideo(nullptr)
     ,m_pItemShadow(nullptr)
@@ -28,9 +29,26 @@ CEffectView::CEffectView(int row, int column, QWidget *parent)
 void CEffectView::showEvent(QShowEvent *pEvent)
 {
     m_operColumnWidth = columnWidth(COL_OPERA_REGION);
-    qDebug() << "m_operColumnWidth : " << m_operColumnWidth;
+    if (nullptr != m_pSpliter)
+    {
+        int posX = FIRST_COLUMN_WIDTH-(m_pSpliter->width()/2);
+        m_pSpliter->SetPosX(posX);
+        m_pSpliter->move(posX, 0);
+        m_pSpliter->setFixedHeight(height());
+    }
 
     QTableWidget::showEvent(pEvent);
+}
+
+void CEffectView::resizeEvent(QResizeEvent *pEvent)
+{
+    if (nullptr != m_pSpliter)
+    {
+        bool bVisible = m_pSpliter->isVisible();
+        ResetSpliter(bVisible);
+    }
+
+    QTableWidget::resizeEvent(pEvent);
 }
 
 void CEffectView::Layout()
@@ -63,6 +81,7 @@ void CEffectView::Layout()
         InitFirstColumn();
         InitTrackContainer();
         InitShadowItem();
+        InitSpliter();
     } while(0);
 }
 
@@ -186,6 +205,18 @@ void CEffectView::InitShadowItem()
     }
 }
 
+void CEffectView::InitSpliter()
+{
+    m_pSpliter = new CTrackSplit(this);
+    if (nullptr != m_pSpliter)
+    {
+        connect(m_pSpliter, SIGNAL(sigSpliterMove(int,int)), this, SLOT(slotSpliterMove(int,int)));
+        connect(m_pSpliter, SIGNAL(sigSpliterBtnClicked(int)), this, SLOT(slotSpliterBtnClicked(int)));
+        m_pSpliter->move(FIRST_COLUMN_WIDTH-(m_pSpliter->width()/2), 0);
+        m_pSpliter->setVisible(false);
+    }
+}
+
 void CEffectView::AppendClip(int type, QString strText, QImage imgThumb, shared_ptr<Mlt::ClipInfo> clipInfo)
 {
     do
@@ -300,10 +331,19 @@ void CEffectView::ResetColumnWidth()
     emit sigColumnWidthChanged(itemTotalWidth);
 }
 
+void CEffectView::ResetSpliter(bool bVisible)
+{
+    if (nullptr == m_pSpliter) return;
+
+    m_pSpliter->setFixedHeight(height());
+    m_pSpliter->setVisible(bVisible);
+}
+
 void CEffectView::slotAddMedia2Track(int type, const QVariant &media)
 {
     do
     {
+        ResetSpliter(true);
         GlobalUtinityObject* pGlobalObj = QmlTypesRegister::instance().UtinityObject();
         if (nullptr == pGlobalObj) break;
 
@@ -438,4 +478,18 @@ void CEffectView::slotItemDelete(CTrackItem *pItem)
 
         ResetColumnWidth();
     } while(0);
+}
+
+void CEffectView::slotSpliterMove(int x, int y)
+{
+    do
+    {
+        if (nullptr == m_pSpliter) break;
+        m_pSpliter->move(x, y);
+    } while(0);
+}
+
+void CEffectView::slotSpliterBtnClicked(int x)
+{
+
 }

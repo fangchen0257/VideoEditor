@@ -196,5 +196,7 @@
         <file>res/trim_click.png</file>
         <file>res/trim_disable.png</file>
         <file>res/trim_hover.png</file>
+        <file>res/red.png</file>
+        <file>res/red_select.png</file>
     </qresource>
 </RCC>

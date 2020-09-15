@@ -15,7 +15,7 @@ class CImagButton : public QPushButton
 {
     Q_OBJECT
 public:
-    CImagButton(QVector<QString> vecRes, int btnId = -1);
+    CImagButton(QVector<QString> vecRes, int btnId = -1, QWidget* parent = nullptr);
     CImagButton(QString strRes, int btnId = -1);
     void SetImgRes(QVector<QString> vecRes);
 

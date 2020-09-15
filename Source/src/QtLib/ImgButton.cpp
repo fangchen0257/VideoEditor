@@ -3,7 +3,8 @@
 #include <qpoint.h>
 #include <QMouseEvent>
 
-CImagButton::CImagButton(QVector<QString> vecRes, int btnId)
+CImagButton::CImagButton(QVector<QString> vecRes, int btnId, QWidget* parent)
+    :QPushButton(parent)
 {
     init(vecRes, btnId);
 }
