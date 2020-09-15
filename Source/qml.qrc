@@ -189,5 +189,12 @@
         <file>res/trim_left.png</file>
         <file>res/trim_right.png</file>
         <file>res/clip_trim_mouse.png</file>
+        <file>res/first_add_video_cutline.png</file>
+        <file>res/first_add_video_dottedline.png</file>
+        <file>res/logo.ico</file>
+        <file>res/trim.png</file>
+        <file>res/trim_click.png</file>
+        <file>res/trim_disable.png</file>
+        <file>res/trim_hover.png</file>
     </qresource>
 </RCC>

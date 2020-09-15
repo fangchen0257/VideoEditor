@@ -132,6 +132,7 @@ int main(int argc, char *argv[])
     Application app(argc, argv);
 
     CMainWin mainw;
+    mainw.setWindowIcon(QIcon(":/res/logo.ico"));
     mainw.setFixedSize(1280,768);
     mainw.show();
 

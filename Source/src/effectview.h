@@ -60,6 +60,7 @@ private slots:
     void slotScaleValueChanged(int value);
     void slotClipTrim(CTrackItem* pItem, int in,int out);
     void slotClipMove(CTrackItem* pItem, int clipIndex, int position);
+    void slotItemDelete(CTrackItem* pItem);
 
 private:
     CEffectHorizonHeader* m_pEffectHeader;

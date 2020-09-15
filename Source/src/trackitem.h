@@ -53,6 +53,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent* pEvent);
     void mouseMoveEvent(QMouseEvent* pEvent);
     bool eventFilter(QObject* pWatched, QEvent* pEvent);
+    void keyPressEvent(QKeyEvent *event);
 
 private:
     void Layout();
@@ -76,6 +77,7 @@ signals:
     void sigItemSelect(CTrackItem*);
     void sigClipTrim(CTrackItem*,int, int);
     void sigMoveClip(CTrackItem*,int,int);
+    void sigItemDelete(CTrackItem*);
 
 protected:
     shared_ptr<Mlt::ClipInfo> m_clipInfo;

@@ -198,6 +198,7 @@ void CEffectView::AppendClip(int type, QString strText, QImage imgThumb, shared_
         connect(pTrackItem, SIGNAL(sigItemSelect(CTrackItem*)), this, SLOT(slotTrackItemSelect(CTrackItem*)));
         connect(pTrackItem, SIGNAL(sigClipTrim(CTrackItem*,int,int)), this, SLOT(slotClipTrim(CTrackItem*,int,int)));
         connect(pTrackItem, SIGNAL(sigMoveClip(CTrackItem*,int,int)), this, SLOT(slotClipMove(CTrackItem*,int,int)));
+        connect(pTrackItem, SIGNAL(sigItemDelete(CTrackItem*)), this, SLOT(slotItemDelete(CTrackItem*)));
 
         double pixelPerFrame = m_pEffectHeader->getPixelPerFrame();
         pTrackItem->ResetPixelPerFrame(pixelPerFrame);
@@ -268,7 +269,11 @@ void CEffectView::DeleteTrackItems(QVector<CTrackItem *> &vecTrackItems)
     for (int i=0, iEnd=vecTrackItems.size(); i<iEnd; ++i)
     {
         CTrackItem* pItem = m_vecTrackItems[i];
-        SAFE_DELETE(pItem);
+        if (nullptr != pItem)
+        {
+            pItem->deleteLater();
+            pItem = nullptr;
+        }
     }
 
     m_vecTrackItems.clear();
@@ -396,7 +401,6 @@ void CEffectView::slotClipTrim(CTrackItem* pItem, int in, int out)
 
 void CEffectView::slotClipMove(CTrackItem* pItem, int clipIndex, int position)
 {
-    return;
     do
     {
         if (nullptr == pItem) break;
@@ -411,5 +415,27 @@ void CEffectView::slotClipMove(CTrackItem* pItem, int clipIndex, int position)
         qDebug()<<"ClipIndex:"<<clipIndex<<"pos:"<<position;
 
         RefreshTrackItems(pItem->type(), pMainTrack);
+    } while(0);
+}
+
+void CEffectView::slotItemDelete(CTrackItem *pItem)
+{
+    do
+    {
+        if (nullptr == pItem) break;
+
+        shared_ptr<Mlt::ClipInfo> clipInfo = pItem->GetClipInfo();
+        if (nullptr == clipInfo) break;
+
+        GlobalUtinityObject* pGlobalObj = QmlTypesRegister::instance().UtinityObject();
+        if (nullptr == pGlobalObj) break;
+
+        shared_ptr<CEUMainVideoTrack> pMainTrack = pGlobalObj->GetTrackor().mainVideoTrack();
+        if (nullptr == pMainTrack) break;
+
+        pMainTrack->removeClip(clipInfo->clip);
+        RefreshTrackItems(pItem->type(), pMainTrack);
+
+        ResetColumnWidth();
     } while(0);
 }

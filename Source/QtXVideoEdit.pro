@@ -89,6 +89,8 @@ LIBS += -L$$PWD/third/lib -lmlt++ -lmlt
 DISTFILES += \
     QtXVideoEdit_zh_CN.ts
 
+RC_ICONS = res/logo.ico
+
 CONFIG(debug,debug|release){
 DESTDIR = ./../Output/Debug
 }

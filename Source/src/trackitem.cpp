@@ -41,6 +41,11 @@ void CTrackItem::SetSelect(bool bSelect)
     m_bSelected = bSelect;
     ResetTrims();
     update();
+
+    if (m_bSelected)
+    {
+        setFocus();
+    }
 }
 
 void CTrackItem::SetBg(QColor clrBg)
@@ -96,6 +101,9 @@ void CTrackItem::mousePressEvent(QMouseEvent *pEvent)
 void CTrackItem::mouseReleaseEvent(QMouseEvent *pEvent)
 {
     m_bIsPressed = false;
+    if (nullptr != m_pItemShadow) {
+        m_pItemShadow->setVisible(false);
+    }
     QPoint ptCurrent = pos();
     if (ptCurrent != m_wndPos)
     {
@@ -118,6 +126,12 @@ void CTrackItem::mouseMoveEvent(QMouseEvent *pEvent)
             if (x >= 0)
             {
                 move(x,y);
+                if (nullptr != m_pItemShadow)
+                {
+                    m_pItemShadow->setVisible(true);
+                    m_pItemShadow->move(x,y);
+                    m_pItemShadow->setFixedSize(size());
+                }
             }
         }
     } while(0);
@@ -143,6 +157,15 @@ bool CTrackItem::eventFilter(QObject *pWatched, QEvent *pEvent)
     } while(0);
 
     return  bHandled;
+}
+
+void CTrackItem::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Delete)
+    {
+        DeleteItem();
+    }
+    return QWidget::keyPressEvent(event);
 }
 
 void CTrackItem::Layout()
@@ -279,7 +302,7 @@ void CTrackItem::ResetItem(shared_ptr<Mlt::ClipInfo> clipInfo, QImage imgThumb)
 
 void CTrackItem::DeleteItem()
 {
-
+    emit sigItemDelete(this);
 }
 
 QRect CTrackItem::calcGeometry(QPoint pt, bool bRightTrim)
@@ -437,7 +460,7 @@ void CTrackItem::OnItemMoveFinish(int xOffset)
     if (nullptr==m_clipInfo || 0.0==m_pixelPerFrm) return;
 
     int clipIndex = m_clipInfo->clip;
-    int position = m_position+xOffset/m_pixelPerFrm;
+    int position = static_cast<int>(m_position+xOffset/m_pixelPerFrm);
     qDebug() << "OnItemMoveFinish" << clipIndex << position << xOffset << m_pixelPerFrm;
 
     emit sigMoveClip(this, clipIndex, position);
