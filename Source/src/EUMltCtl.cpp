@@ -130,7 +130,7 @@ void CMltCtl::EUPause ()
     if (m_producer)
     {
        m_producer->set_speed(0);
-       m_producer->seek(m_consumer->position() + 1);
+       m_producer->seek(m_consumer->position());
        m_consumer->purge();
        m_consumer->start();
        refreshConsumer();
@@ -218,7 +218,7 @@ int CMltCtl::EUGetDuration()
     do
     {
         CHECK_BREAK(!m_producer);
-        duration = static_cast<int>(m_producer->get_playtime() / m_producer->get_fps());
+        duration = static_cast<int>(m_producer->get_playtime() - 1 / m_producer->get_fps());
 
     } while (false);
 
@@ -316,4 +316,9 @@ int CMltCtl::Open()
     } while (false);
 
     return error;
+}
+
+shared_ptr<Mlt::Producer> CMltCtl::EuGetCurrentProducer()
+{
+    return m_producer;
 }

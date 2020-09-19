@@ -231,6 +231,10 @@ Item {
                     _global_utinity_obj.seekToPos(value);
                }
 
+               onValueChanged: {
+                   onSliderValueChanged(progress.value)
+               }
+
                background: Rectangle {
                         x: progress.leftPadding
                         y: progress.topPadding + progress.availableHeight / 2 - height / 2
@@ -261,6 +265,8 @@ Item {
 
         }   //end column
 
+
+/*
         LibComponent.DurationItem {
                 id: durationEdit
                 anchors.right: parent.right
@@ -274,6 +280,76 @@ Item {
                 radius: 4
 
             }
+*/
+
+        Text
+        {
+            id: durationEdit
+            anchors.right: parent.right
+            anchors.left: rowLayout.right
+            anchors.verticalCenter: rowLayout.verticalCenter
+            width: timeContrlWidth - 30
+            height: 24
+            color: "#ffffff"
+            property int totalDuration: 0
+            property int curDuration: 0
+            property int hourRadix: (60 * 60)
+            property int minuteRadix: (60)
+            property int secondsRadix: 1
+            property int framenumber: 0
+            property int restFrame: 0
+            property int second: 0
+            property string totalString:""
+
+
+            function setTotalString()
+            {
+                var dur = second;
+
+                var hour = parseInt(dur / hourRadix)
+                var minutes = parseInt( (dur % hourRadix) / minuteRadix )
+                var seconds = parseInt( ((dur % hourRadix) % minuteRadix) / secondsRadix )
+                var milliseconds = parseInt( restFrame )
+
+                hour = formatTime(hour);
+                minutes = formatTime(minutes);
+                seconds = formatTime(seconds);
+                milliseconds = formatTime(milliseconds);
+
+                totalString = hour +":" +minutes+":" + seconds+":"+milliseconds;
+            }
+
+            function formatTime(time)
+            {
+                return time > 9 ? '' + time : '0' + time
+            }
+
+            function setcurrentDuration(duration,framen)
+            {
+                framenumber = framen;
+                curDuration = duration;
+
+                var hour = parseInt(curDuration / hourRadix)
+                var minutes = parseInt( (curDuration % hourRadix) / minuteRadix )
+                var seconds = parseInt( ((curDuration % hourRadix) % minuteRadix) / secondsRadix )
+                var milliseconds = parseInt( framenumber )
+
+                hour = formatTime(hour);
+                minutes = formatTime(minutes);
+                seconds = formatTime(seconds);
+                milliseconds = formatTime(milliseconds);
+
+                var curText = hour +":" +minutes+":" + seconds+":"+milliseconds;
+                text = curText + "/" +totalString;
+
+            }
+
+            Component.onCompleted:
+            {
+                _global_utinity_obj.setVideoSecond.connect(setcurrentDuration)
+            }
+            text: "00:00:00:00/00:00:00:00"
+        }
 
         /*
         LibComponent.ComboxComponent {
@@ -394,23 +470,32 @@ Item {
         }
 
         onWidthChanged: {
-            durationEdit.setTimeEditRect()
+            //durationEdit.setTimeEditRect()
 
         }
     }
 
-    function initVideoDuration(duration){
+    function initVideoDuration(duration, second, frames){
         //durationEdit.setcurrentDuration(duration)
         progress.to = duration;
         playItem.totalDuration = duration;
-        playBt.visible = false;
-        pauseBt.visible = true;
+        durationEdit.totalDuration = duration;
+        durationEdit.restFrame = frames;
+        durationEdit.second = second;
+        durationEdit.setTotalString();
+        //playBt.visible = false;
+        //pauseBt.visible = true;
     }
 
     function setVideoDuration(duration)
     {
         playItem.curDuration = duration;
         progress.value = duration;
+    }
+
+    function onSliderValueChanged(value)
+    {
+        _global_utinity_obj.videoProgressValueChanged(value);
     }
 
     Component.onCompleted: {

@@ -9,13 +9,14 @@
 #define SMALL_SCALE 8       //小刻度像素高度
 #define FRAME_PER_SEC 30    //fps
 
-const int scaleFactor[20] = {300,270,255,240,225,210,195,180,165,150,135,120,105,90,75,60,45,30,15,1};
+const int scaleFactor[20] = {300,270,255,240,225,210,195,180,165,150,135,120,105,90,45,40,30,15,5,1};
 CEffectHorizonHeader::CEffectHorizonHeader(QWidget *parent)
     :QHeaderView(Qt::Horizontal, parent)
     ,m_pParent(parent)
     ,m_factor(10)
     ,m_scaleCount(0)
 {
+    setSectionsClickable(true);
     setSectionResizeMode(QHeaderView::Fixed);
     setFixedHeight(40);
 }
@@ -35,9 +36,9 @@ double CEffectHorizonHeader::getPixelPerFrame()
         if (nullptr == pEffectView) break;
 
         int frameCount = m_scaleCount*UNIT_FRAME*getScaleFactor();
-        int width = pEffectView->columnWidth(COL_OPERA_REGION);
-        qDebug() << "frame count：" << frameCount << "width:" << width;
+        if (0 == frameCount) break;
 
+        int width = pEffectView->columnWidth(COL_OPERA_REGION);
         fPixelPerFrame = (width-FIRST_COLUMN_WIDTH)/(frameCount*1.0);
     } while(0);
 

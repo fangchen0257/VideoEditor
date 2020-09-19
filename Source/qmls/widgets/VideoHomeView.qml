@@ -15,7 +15,14 @@ Item {
     property int bottomSplitMinHeight: 200
     property int topSplitMaxHeight: root.height - bottomSplitMinHeight
 
+    focus:true
+    Keys.enabled: true;
+    Keys.forwardTo: [splitView]
+    Keys.onPressed: {
+                console.log("22");
+    }
     SplitView {
+        id:splitView
         orientation: Qt.Horizontal
         height: topSplitMaxHeight
         anchors.fill: parent
@@ -25,11 +32,25 @@ Item {
             color: "#151921"
         }
 
+        focus:true
+        Keys.enabled: true;
+        Keys.forwardTo: [filtersView]
+        Keys.onPressed: {
+            console.log("333");
+        }
+
         Filters.FiltersView {
+            id:filtersView
             width: funcViewWidth
             Layout.maximumWidth: funcViewMaxWidth
             Layout.minimumWidth: funcViewMinWidth
             height: parent.height
+
+            focus:true
+            Keys.enabled: true;
+            Keys.onPressed: {
+                console.log("11");
+            }
         }
 
         Play.PlayView {

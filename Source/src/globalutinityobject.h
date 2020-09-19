@@ -14,11 +14,11 @@
 typedef enum _MEDIA_ITEM_TYPE_
 {
     MEDIA_VIDEO,
-    MEDIA_TRANSITION,
     MEDIA_PIP,
     MEDIA_FILTER,
     MEDIA_TEXT,
-    MEDIA_MUSIC
+    MEDIA_MUSIC,
+    MEDIA_TRANSITION,
 };
 class GlobalUtinityObject : public QObject
 {
@@ -37,7 +37,13 @@ public:
     Q_INVOKABLE void focusInTimeEdit(const int x, const int y);
     Q_INVOKABLE void addVideoToPlayView(const QVariant& fileUrl);
     Q_INVOKABLE void addVideoToTrack(const QVariant& fileUrl);
+    Q_INVOKABLE void addPIPToTrack(const QVariant& fileUrl);
     Q_INVOKABLE void scaleSliderValueChanged(int value);
+    Q_INVOKABLE void videoProgressValueChanged(int value);
+    void ResetDuration();
+    void IniViewDuration();
+    void SwitchPlayState();
+    void SetCurFrame(const int frame);
     void UpdateDuration(int pos, int second);
     void ReleaseFrame(FrameData data);
     CMltCtl &GetMltCtrl();
@@ -45,11 +51,13 @@ public:
 
 signals:
     void timeEditFocusOut();
-    void initVideoDuration(const int duration);
+    void initVideoDuration(const int duration, const int second, const int frames);
     void setVideoDuration(const int duration);
     void setVideoSecond(const int duration, int framenumber);
     void sigAddMedia2Track(int type, const QVariant& fileUrl);
+    void sigAddPIP2Track(int type, const QVariant& fileUrl);
     void sigScaleSliderValueChanged(int value);
+    void sigVideoProgressValueChanged(int value);
 
 private:
     QRect time_ctrl_rect_;

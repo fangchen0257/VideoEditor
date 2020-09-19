@@ -20,6 +20,9 @@ public:
     shared_ptr<CEUFilterTrack> textTrack() { return shared_ptr<CEUFilterTrack>(new CEUFilterTrack(*this, TextFilter)); }
     shared_ptr<CEUAudioTrack> audioTrack() { return shared_ptr<CEUAudioTrack>(new CEUAudioTrack(*this, m_playlist[AudioTrack_0])); }
 
+    bool load(const string &path);
+    bool save(const string &path);
+
     int getLength();
     void onChanged();
 

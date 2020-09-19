@@ -43,23 +43,39 @@ private:
     void InitFirstColumn();
     CBox* InitCellItem(QString strIcon, QString strText, QVector<QString> vecResLock, QVector<QString> vecVisible, QVector<QString> vecMute);
     void InitTrackContainer();
-    void InitShadowItem();
     void InitSpliter();
 
 private:
     void AppendClip(int type, QString strText, QImage imgThumb, shared_ptr<Mlt::ClipInfo> clipInfo);
     QString trackItemText(QString strMediaPath);
     void SelectItem(CTrackItem* pCurItem);
-    void RefreshTrackItems(int type, shared_ptr<CEUMainVideoTrack> pMainTrack);
+    void RefreshTrackItems(int type);
     void DeleteTrackItems(QVector<CTrackItem*>& vecTrackItems);
     void ResetColumnWidth();
     void ResetSpliter(bool bVisible);
+    void ResetProducer(int type, int positon);
+    double GetPixelPerFrame();
+
+private:
+    void addItem2Vector(int type, CTrackItem* pItem);
+    CItemShadow* itemShadow(int type);
+    CBox* itemContainer(int type);
+    int itemWidth(int type);
+    QVector<CTrackItem*> getAllTrackItems();
+    int getSpliterMaximum();
+    int getSpliterCurFrame();
+    bool isTrackProducer();
+
+private:
+    shared_ptr<CEUMainVideoTrack> mainVideoTrack();
+    shared_ptr<CEUSubVideoTrack> subVideoTrack();
 
 signals:
     void sigColumnWidthChanged(int);
 
 private slots:
     void slotAddMedia2Track(int type, const QVariant& media);
+    void slotAddPIP2Track(int type,const QVariant& media);
     void slotTrackItemSelect(CTrackItem* pItem);
     void slotScaleValueChanged(int value);
     void slotClipTrim(CTrackItem* pItem, int in,int out);
@@ -67,13 +83,17 @@ private slots:
     void slotItemDelete(CTrackItem* pItem);
     void slotSpliterMove(int x, int y);
     void slotSpliterBtnClicked(int x);
+    void slotVideoPoregressValueChanged(int value);
+    void slotSectionClick(int logicalIndex);
 
 private:
     CTrackSplit* m_pSpliter;
     CEffectHorizonHeader* m_pEffectHeader;
-    CBox* m_pHboxTrackVideo;
-    CItemShadow* m_pItemShadow;
-    QVector<CTrackItem*> m_vecTrackItems;
+    CTrackItem* m_pCurrentItem;
+
+    QVector<QPair<CBox*, CItemShadow*>> m_vecItemContainer;
+    QVector<CTrackItem*> m_vecTrackItems4Video;
+    QVector<CTrackItem*> m_vecTrackItems4PIP;
     int m_operColumnWidth;
 };
 

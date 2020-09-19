@@ -28,7 +28,12 @@ void FrameRecvFun( void *szUserInfo, FrameData frame, mlt_position timePos )
     }
     GlobalUtinityObject *obj = static_cast<GlobalUtinityObject *>(szUserInfo);
 
-    obj->UpdateDuration(frame.pos, timePos);
+    mlt_position pos = timePos - 1;
+
+    if (pos < 0)
+        pos = 0;
+
+    obj->UpdateDuration(frame.pos, pos);
     obj->ReleaseFrame(frame);
 }
 
@@ -61,12 +66,11 @@ void GlobalUtinityObject::addVideoToPlayView(const QVariant &fileUrl)
   }
 
   m_MltCtrl.EUOpen(videoPath.toUtf8().data());
-  int duration = m_MltCtrl.EUGetLength() - 1;
-  g_maxFrame = duration;
-  emit initVideoDuration(duration);
+  ResetDuration();
   m_bPlaying = true;
   m_bStop = false;
   m_MltCtrl.EUPlay();
+  QMetaObject::invokeMethod(g_player, "setPause", Q_ARG(QVariant, false));
 }
 
 void GlobalUtinityObject::addVideoToTrack(const QVariant &fileUrl)
@@ -74,9 +78,62 @@ void GlobalUtinityObject::addVideoToTrack(const QVariant &fileUrl)
     emit sigAddMedia2Track(MEDIA_VIDEO, fileUrl);
 }
 
+void GlobalUtinityObject::addPIPToTrack(const QVariant &fileUrl)
+{
+    emit sigAddPIP2Track(MEDIA_PIP, fileUrl);
+}
+
 void GlobalUtinityObject::scaleSliderValueChanged(int value)
 {
-    sigScaleSliderValueChanged(value);
+    emit sigScaleSliderValueChanged(value);
+}
+
+void GlobalUtinityObject::videoProgressValueChanged(int value)
+{
+    emit sigVideoProgressValueChanged(value);
+}
+
+void GlobalUtinityObject::ResetDuration()
+{
+    int duration = m_MltCtrl.EUGetLength() - 1;
+    double fps = m_MltCtrl.EUGetFps();
+    int second = static_cast<int>(duration / fps);
+    int frames = static_cast<int>(second * fps);
+    g_maxFrame = duration;
+    emit initVideoDuration(duration,second,duration - frames);
+}
+
+void GlobalUtinityObject::IniViewDuration()
+{
+      m_bStop = false;
+      m_bPlaying = false;
+      ResetDuration();
+}
+
+void GlobalUtinityObject::SwitchPlayState()
+{
+    if (!m_bStop)
+    {
+        setPlay(!m_bPlaying);
+    }
+}
+
+void GlobalUtinityObject::SetCurFrame(const int frame)
+{
+    double fps = m_MltCtrl.EUGetFps();
+    double frames = 0;
+    int second = static_cast<int>(frame / fps);
+
+
+    if (second >= 0)
+    {
+        frames = fps * second;
+    }
+
+    int f = static_cast<int>(frame - frames);
+
+    emit setVideoDuration(frame);
+    emit setVideoSecond(second, f);
 }
 
 void GlobalUtinityObject::UpdateDuration(int pos, int second)
@@ -88,18 +145,7 @@ void GlobalUtinityObject::UpdateDuration(int pos, int second)
         m_bStop = true;
     }
 
-    double fps = m_MltCtrl.EUGetFps();
-    double frames = 0;
-
-    if (second > 0)
-    {
-        frames = fps * (second - 1);
-    }
-
-    int f = static_cast<int>(pos - frames);
-
-    emit setVideoDuration(pos);
-    emit setVideoSecond(second, f);
+    SetCurFrame(pos);
 }
 
 void GlobalUtinityObject::ReleaseFrame(FrameData data)
@@ -125,7 +171,7 @@ void GlobalUtinityObject::openFile()
 
     int duration = m_MltCtrl.EUGetLength() - 1;
     g_maxFrame = duration;
-    emit initVideoDuration(duration);
+    emit initVideoDuration(duration,0,0);
 
     m_bPlaying = true;
     m_bStop = false;
@@ -150,7 +196,7 @@ void GlobalUtinityObject::seekToPos(int duration)
 
 void GlobalUtinityObject::setPlay(bool play)
 {
-    if (m_bStop)
+    if (m_bStop && play)
     {
         m_bStop = false;
         m_bPlaying = true;
@@ -158,14 +204,13 @@ void GlobalUtinityObject::setPlay(bool play)
         m_MltCtrl.EUPlay();
         QMetaObject::invokeMethod(g_player, "setPause", Q_ARG(QVariant, false));
     }
-    else if (m_bPlaying != play)
+    else
     {
         m_bPlaying = play;
         if (m_bPlaying)
             m_MltCtrl.EUPlay();
         else
             m_MltCtrl.EUPause();
-
         QMetaObject::invokeMethod(g_player, "setPause", Q_ARG(QVariant, !m_bPlaying));
     }
 }

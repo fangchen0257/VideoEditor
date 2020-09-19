@@ -9,11 +9,11 @@
 typedef enum _TRACK_ITEM_TYPE_
 {
     ITEM_VIDEO,
-    ITEM_TRANSITION,
     ITEM_PIP,
     ITEM_FILTER,
     ITEM_TEXT,
-    ITEM_MUSIC
+    ITEM_MUSIC,
+    ITEM_TRANSITION,
 }TRACK_TYPE;
 
 class CItemShadow : public QWidget

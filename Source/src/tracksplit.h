@@ -12,6 +12,7 @@ class CTrackSplit : public QWidget
 public:
     CTrackSplit(QWidget* parent = nullptr);
     void SetPosX(int posX);
+    int InitializePos();
 
 private:
     void Layout();
@@ -35,9 +36,9 @@ private:
     CImagButton* m_pBtnSplit;
     QLabel* m_pLabMark;
 
-    bool m_bIsPressed;
-    QPoint m_ptMousePressed;
-    int m_posX;
+    bool    m_bIsPressed;
+    QPoint  m_ptMousePressed;
+    int     m_InitializePosX;   //初始位置
 };
 
 #endif // CTRACKSPLIT_H

@@ -29,6 +29,63 @@ bool CEUTractor::Init()
     return bRet;
 }
 
+bool CEUTractor::load(const string &path)
+{
+    bool bRet = true;
+
+    do
+    {
+        FAIL_BREAK(!m_tractor, bRet, false);
+
+        CEUProducer p(profile, path.c_str());
+
+        p.producer()->set("mlt_type", "mlt_producer");
+        p.producer()->set("resource", "<tractor>");
+        m_tractor.reset(new Mlt::Tractor(*p.producer()));
+        CALL_BREAK(m_tractor->is_valid(), bRet);
+
+    } while (false);
+
+    if (!bRet)
+    {
+        m_tractor.reset();
+    }
+
+    return bRet;
+}
+
+bool CEUTractor::save(const string &path)
+{
+    bool bRet = true;
+
+    do
+    {
+        FAIL_BREAK(!m_tractor, bRet, false);
+
+        Mlt::Consumer c(profile, "xml", path.c_str());
+        Mlt::Service s(m_tractor->get_service());
+        CALL_BREAK(s.is_valid(), bRet);
+
+        int ignore = s.get_int("ignore_points");
+        if (ignore)
+            s.set("ignore_points", 0);
+        c.set("time_format", "clock");
+        c.set("no_meta", 1);
+        c.set("store", "shotcut");
+        c.set("root", "");
+        c.set("no_root", 1);
+        c.connect(s);
+        c.start();
+        if (ignore)
+        {
+            s.set("ignore_points", ignore);
+        }
+
+    } while (false);
+
+    return bRet;
+}
+
 int CEUTractor::getLength()
 {
     int nDuration = 0;

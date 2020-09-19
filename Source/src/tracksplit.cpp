@@ -7,13 +7,19 @@ CTrackSplit::CTrackSplit(QWidget *parent)
     ,m_pBtnSplit(nullptr)
     ,m_pLabMark(nullptr)
     ,m_bIsPressed(false)
+    ,m_InitializePosX(0)
 {
     Layout();
 }
 
 void CTrackSplit::SetPosX(int posX)
 {
-    m_posX = posX;
+    m_InitializePosX = posX;
+}
+
+int CTrackSplit::InitializePos()
+{
+    return m_InitializePosX;
 }
 
 void CTrackSplit::Layout()
@@ -75,12 +81,15 @@ bool CTrackSplit::eventFilter(QObject *pWatched, QEvent *pEvent)
 
                     int x = ptCur.x()+((pt-m_ptMousePressed).x());
                     int y = ptCur.y();
-                    if (x >= m_posX)
+                    if (x >= m_InitializePosX)
                     {
                         sigSpliterMove(x, y);
                     }
                 }
             }
+        }
+        else {
+            pEvent->ignore();
         }
     } while(0);
 

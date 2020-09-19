@@ -61,7 +61,9 @@ void CTimeLine::Layout()
         m_pEffectView->installEventFilter(this);
         connect(m_pEffectView, SIGNAL(sigColumnWidthChanged(int)), SLOT(slotColumnWidthChanged(int)));
         connect(m_pGlobalObject, SIGNAL(sigAddMedia2Track(int,const QVariant&)), m_pEffectView, SLOT(slotAddMedia2Track(int,const QVariant&)));
+        connect(m_pGlobalObject, SIGNAL(sigAddPIP2Track(int,const QVariant&)), m_pEffectView, SLOT(slotAddPIP2Track(int,const QVariant&)));
         connect(m_pGlobalObject, SIGNAL(sigScaleSliderValueChanged(int)), m_pEffectView, SLOT(slotScaleValueChanged(int)));
+        connect(m_pGlobalObject, SIGNAL(sigVideoProgressValueChanged(int)), m_pEffectView, SLOT(slotVideoPoregressValueChanged(int)));
         pVboxMain->addWidget(m_pEffectView);
 
         InitFreezonView(m_pEffectView);

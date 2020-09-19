@@ -40,6 +40,7 @@ public:
     double EUGetFps();
 
     int Open();
+    shared_ptr<Mlt::Producer> EuGetCurrentProducer();
 
 private:
     Mlt::Profile m_profile;

@@ -13,7 +13,7 @@ public:
 protected:
     void paintEvent(QPaintEvent* pEvent);
     void closeEvent(QCloseEvent *e);
-
+    virtual void keyPressEvent(QKeyEvent *e) override;
 private:
     void Layout();
 

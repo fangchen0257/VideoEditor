@@ -127,6 +127,7 @@ Item {
             //enabled: false
         }
 
+
         LibComponent.StyleImageButton {
             width: 10
             height: 5
@@ -150,8 +151,6 @@ Item {
         }
 
     }
-
-
 
     function refushPlayDuration()
     {

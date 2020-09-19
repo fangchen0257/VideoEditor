@@ -4,6 +4,7 @@
 #include <QtQuickWidgets/QtQuickWidgets>
 #include "qmltypesregister.h"
 #include <QSplitter>
+#include <QKeyEvent>
 #include "timeline.h"
 
 CMainWin::CMainWin(QWidget *parent)
@@ -12,6 +13,7 @@ CMainWin::CMainWin(QWidget *parent)
 {
     QmlTypesRegister::instance().RegisterCommonType();
     Layout();
+    setFocus();
 }
 
 void CMainWin::paintEvent(QPaintEvent *pEvent)
@@ -30,6 +32,33 @@ void CMainWin::paintEvent(QPaintEvent *pEvent)
 void CMainWin::closeEvent(QCloseEvent *e)
 {
     QmlTypesRegister::instance().UtinityObject()->stopPlay();
+}
+
+void CMainWin::keyPressEvent(QKeyEvent *e)
+{
+   //int key = e->key();
+/*
+   switch (key)
+   {
+   case Qt::Key_Space:
+        QmlTypesRegister::instance().UtinityObject()->switchPlayState();
+        break;
+   case Qt::Key_Left:
+        QmlTypesRegister::instance().UtinityObject()->stopPlay();
+        break;
+   case Qt::Key_Right:
+        QmlTypesRegister::instance().UtinityObject()->stopPlay();
+        break;
+   case Qt::Key_Up:
+        QmlTypesRegister::instance().UtinityObject()->stopPlay();
+        break;
+   case Qt::Key_Down:
+        QmlTypesRegister::instance().UtinityObject()->stopPlay();
+        break;
+   default:
+       QWidget::keyPressEvent(e);
+   }
+*/
 }
 
 void CMainWin::Layout()

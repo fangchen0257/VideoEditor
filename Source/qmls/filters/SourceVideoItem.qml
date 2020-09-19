@@ -85,7 +85,7 @@ Item{
                 bgHover: "qrc:/res/pip_icon_add_h.png"
                 bgPressed: "qrc:/res/pip_icon_add_h.png"
                 onClicked: {
-
+                    addPIPToTrack(videoPath)
                 }
             }
 
@@ -125,6 +125,11 @@ Item{
     function addVideoToTrack(fileUrl)
     {
         _global_utinity_obj.addVideoToTrack(fileUrl);
+    }
+
+    function addPIPToTrack(fileUrl)
+    {
+        _global_utinity_obj.addPIPToTrack(fileUrl);
     }
 }
 
