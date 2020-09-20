@@ -252,6 +252,20 @@ double CMltCtl::EUGetFps()
     return fps;
 }
 
+int CMltCtl::EUGetPosition()
+{
+    int position = 0;
+
+    do
+    {
+        CHECK_BREAK(!m_producer);
+        position = m_producer->position();
+
+    } while (false);
+
+    return position;
+}
+
 int CMltCtl::Open()
 {
     int error = 0;

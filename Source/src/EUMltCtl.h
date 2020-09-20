@@ -38,6 +38,7 @@ public:
     int EUGetDuration();
     int EUGetLength();
     double EUGetFps();
+    int EUGetPosition();
 
     int Open();
     shared_ptr<Mlt::Producer> EuGetCurrentProducer();

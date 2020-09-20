@@ -15,7 +15,7 @@ CTimeLine::CTimeLine(GlobalUtinityObject* pGlobalObject, QWidget *parent)
 
 bool CTimeLine::eventFilter(QObject *watched, QEvent *event)
 {
-    if (watched == m_pEffectView)
+    if (watched == m_pEffectView->viewport())
     {
         int type = event->type();
         if (type == QEvent::Resize)
@@ -58,7 +58,7 @@ void CTimeLine::Layout()
 
         m_pEffectView = new CEffectView(ROW_CNT-1,COL_CNT);
         if (nullptr == m_pEffectView) break;
-        m_pEffectView->installEventFilter(this);
+        m_pEffectView->viewport()->installEventFilter(this);
         connect(m_pEffectView, SIGNAL(sigColumnWidthChanged(int)), SLOT(slotColumnWidthChanged(int)));
         connect(m_pGlobalObject, SIGNAL(sigAddMedia2Track(int,const QVariant&)), m_pEffectView, SLOT(slotAddMedia2Track(int,const QVariant&)));
         connect(m_pGlobalObject, SIGNAL(sigAddPIP2Track(int,const QVariant&)), m_pEffectView, SLOT(slotAddPIP2Track(int,const QVariant&)));

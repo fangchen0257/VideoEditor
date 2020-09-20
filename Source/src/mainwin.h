@@ -9,6 +9,7 @@ class CMainWin : public QMainWindow
     Q_OBJECT
 public:
     CMainWin(QWidget* parent = nullptr);
+    void OnMax();
 
 protected:
     void paintEvent(QPaintEvent* pEvent);

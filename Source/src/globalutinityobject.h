@@ -13,13 +13,13 @@
 
 typedef enum _MEDIA_ITEM_TYPE_
 {
-    MEDIA_VIDEO,
+    MEDIA_VIDEO = 1,
     MEDIA_PIP,
     MEDIA_FILTER,
     MEDIA_TEXT,
     MEDIA_MUSIC,
     MEDIA_TRANSITION,
-};
+}MEDIA_ITEM_TYPE;
 class GlobalUtinityObject : public QObject
 {
     Q_OBJECT

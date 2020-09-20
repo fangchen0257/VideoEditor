@@ -16,6 +16,14 @@ CMainWin::CMainWin(QWidget *parent)
     setFocus();
 }
 
+void CMainWin::OnMax()
+{
+    if (nullptr != m_pWinTitle)
+    {
+        m_pWinTitle->slotBtnClick(TITLE_BTN_MAX);
+    }
+}
+
 void CMainWin::paintEvent(QPaintEvent *pEvent)
 {
     Q_UNUSED(pEvent);

@@ -2,12 +2,12 @@
 #define EFFECTVIEW_H
 
 #include <QTableWidget>
-#include "effecthorizonheader.h"
 #include "QtLib/box.h"
 #include "trackitem.h"
 #include "EUTractor.h"
 #include "QtLib/public.h"
 #include "tracksplit.h"
+#include "scalecell.h"
 
 enum _TRACK_OPER_
 {
@@ -18,6 +18,7 @@ enum _TRACK_OPER_
 
 enum _ROW_ITEMS_
 {
+    ROW_SCALE,
     ROW_VIDEO,
     ROW_PICINPIC,
     ROW_FILTERS,
@@ -27,6 +28,14 @@ enum _ROW_ITEMS_
     ROW_CNT
 };
 
+enum _COLUMN_ITEMS_
+{
+    COL_EFFECT_NAME,
+    COL_OPERA_REGION,
+    COL_CNT
+};
+
+#define FIRST_COLUMN_WIDTH 150
 class CEffectView: public QTableWidget
 {
     Q_OBJECT
@@ -36,13 +45,14 @@ public:
 
 protected:
     void showEvent(QShowEvent* pEvent);
-    void resizeEvent(QResizeEvent* pEvent);
+    bool viewportEvent(QEvent* pEvent);
 
 private:
     void Layout();
     void InitFirstColumn();
     CBox* InitCellItem(QString strIcon, QString strText, QVector<QString> vecResLock, QVector<QString> vecVisible, QVector<QString> vecMute);
     void InitTrackContainer();
+    void InitScaleCellWidget();
     void InitSpliter();
 
 private:
@@ -54,6 +64,7 @@ private:
     void ResetColumnWidth();
     void ResetSpliter(bool bVisible);
     void ResetProducer(int type, int positon);
+    void AdjustSpliterPos();
     double GetPixelPerFrame();
 
 private:
@@ -65,6 +76,7 @@ private:
     int getSpliterMaximum();
     int getSpliterCurFrame();
     bool isTrackProducer();
+    int horScrollBarValue();
 
 private:
     shared_ptr<CEUMainVideoTrack> mainVideoTrack();
@@ -84,18 +96,18 @@ private slots:
     void slotSpliterMove(int x, int y);
     void slotSpliterBtnClicked(int x);
     void slotVideoPoregressValueChanged(int value);
-    void slotSectionClick(int logicalIndex);
-    void slotHorizonBarChanged(int value);
+    void slotScaleCellClick();
 
 private:
+    CScaleCell* m_pScaleCell;   //刻度尺
     CTrackSplit* m_pSpliter;
-    CEffectHorizonHeader* m_pEffectHeader;
     CTrackItem* m_pCurrentItem;
 
     QVector<QPair<CBox*, CItemShadow*>> m_vecItemContainer;
     QVector<CTrackItem*> m_vecTrackItems4Video;
     QVector<CTrackItem*> m_vecTrackItems4PIP;
-    int m_operColumnWidth;
+    int     m_operColumnWidth;
+    bool    m_bSetCurrentFrame;
 };
 
 #endif // EFFECTVIEW_H

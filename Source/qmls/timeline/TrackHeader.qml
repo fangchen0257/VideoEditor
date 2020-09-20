@@ -217,6 +217,7 @@ Item {
             Slider {
                 id: sliderObj
                 anchors.verticalCenter: parent.verticalCenter
+                width: 100
                 padding: 0
                 from: 1
                 to: 20

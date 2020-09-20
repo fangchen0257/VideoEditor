@@ -50,10 +50,11 @@ void CTrackSplit::InitRegionMask()
 {
     do
     {
-        if (nullptr == m_pBtnSplit) break;
+        if (nullptr==m_pBtnSplit || nullptr==m_pLabMark) break;
 
+        QRect rtLabMark = m_pLabMark->geometry();
         QRect rt = rect();
-        QRegion region(rt.left(),rt.top(),rt.width(),HEADER_HEIGHT);
+        QRegion region(rtLabMark.left(),rtLabMark.top(),rtLabMark.width(),HEADER_HEIGHT);
 
         int xOffset = 2;
         region += QRegion(rt.width()/2-xOffset,HEADER_HEIGHT,xOffset*2,rt.bottom());
