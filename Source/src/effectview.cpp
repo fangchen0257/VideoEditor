@@ -8,13 +8,16 @@
 #include <qurl.h>
 #include <qimage.h>
 #include "qmltypesregister.h"
+#include "uipublic.h"
+#include "mainwin.h"
 
+#define REGION_WIDTH_NORMAL 1115
 CEffectView::CEffectView(QWidget* parent)
     :QTableWidget(parent)
     ,m_pScaleCell(nullptr)
     ,m_pSpliter(nullptr)
     ,m_pCurrentItem(nullptr)
-    ,m_operColumnWidth(0)
+    ,m_regionWidthOnMax(0)
     ,m_bSetCurrentFrame(false)
 {
     Layout();
@@ -47,12 +50,11 @@ bool CEffectView::viewportEvent(QEvent *pEvent)
 
         if (QEvent::Resize == pEvent->type())
         {
-            m_operColumnWidth = columnWidth(COL_OPERA_REGION);
             if (nullptr != m_pScaleCell)
             {
-                int width = columnWidth(COL_OPERA_REGION);
-                qDebug() << "CEffectView::viewportEvent width : " << width;
-                m_pScaleCell->setFixedWidth(width);
+                int regionWidth = columnWidth(COL_OPERA_REGION);
+                if (m_regionWidthOnMax < regionWidth) { m_regionWidthOnMax = regionWidth; }
+                m_pScaleCell->setFixedWidth(regionWidth);
             }
 
             if (nullptr != m_pSpliter)
@@ -402,8 +404,16 @@ void CEffectView::ResetColumnWidth()
     int pipW = itemWidth(ROW_PICINPIC);
     if (pipW > totalWidth) { totalWidth = pipW; }
 
-    if (totalWidth <= m_operColumnWidth) {
-        totalWidth = m_operColumnWidth;
+    int regionWidth = m_regionWidthOnMax;
+    CMainWin* pMainWin = static_cast<CMainWin*>(CUIPublic::instance().GetMainWin());
+    if (nullptr!=pMainWin && !pMainWin->IsMaximized())
+    {
+        regionWidth = REGION_WIDTH_NORMAL;
+    }
+
+    if (totalWidth <= regionWidth)
+    {
+        totalWidth = regionWidth;
     }
     setColumnWidth(COL_OPERA_REGION, totalWidth);
     if (nullptr != m_pScaleCell) { m_pScaleCell->setFixedWidth(totalWidth); }

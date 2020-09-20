@@ -16,6 +16,11 @@ WinFrmTitle::WinFrmTitle(QString strTitle, QWidget *parent)
     Layout();
 }
 
+bool WinFrmTitle::IsMaximized()
+{
+    return m_bIsMaximized;
+}
+
 void WinFrmTitle::paintEvent(QPaintEvent *pEvent)
 {
     Q_UNUSED(pEvent);

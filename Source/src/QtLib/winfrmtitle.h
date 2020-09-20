@@ -17,6 +17,7 @@ class WinFrmTitle : public QWidget
     Q_OBJECT
 public:
     WinFrmTitle(QString strTitle, QWidget* parent);
+    bool IsMaximized();
 
 protected:
     void paintEvent(QPaintEvent* pEvent) override;

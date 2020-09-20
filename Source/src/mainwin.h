@@ -10,10 +10,11 @@ class CMainWin : public QMainWindow
 public:
     CMainWin(QWidget* parent = nullptr);
     void OnMax();
+    bool IsMaximized();
 
 protected:
-    void paintEvent(QPaintEvent* pEvent);
-    void closeEvent(QCloseEvent *e);
+    void paintEvent(QPaintEvent* pEvent) override;
+    void closeEvent(QCloseEvent *e) override;
     virtual void keyPressEvent(QKeyEvent *e) override;
 private:
     void Layout();

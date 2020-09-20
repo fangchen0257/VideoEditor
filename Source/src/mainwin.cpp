@@ -24,6 +24,12 @@ void CMainWin::OnMax()
     }
 }
 
+bool CMainWin::IsMaximized()
+{
+    if (nullptr == m_pWinTitle) return false;
+    return m_pWinTitle->IsMaximized();
+}
+
 void CMainWin::paintEvent(QPaintEvent *pEvent)
 {
     Q_UNUSED(pEvent);

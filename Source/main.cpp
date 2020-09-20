@@ -12,6 +12,7 @@
 #include "src/EUType.h"
 #include "src/qmltypesregister.h"
 #include "src/mainwin.h"
+#include "src/uipublic.h"
 
 void QtMessageLogHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
@@ -132,6 +133,7 @@ int main(int argc, char *argv[])
     Application app(argc, argv);
 
     CMainWin mainw;
+    CUIPublic::instance().SetMainWin(&mainw);
     mainw.setWindowIcon(QIcon(":/res/logo.ico"));
     mainw.setFixedSize(1280,768);
     mainw.OnMax();

@@ -106,7 +106,7 @@ private:
     QVector<QPair<CBox*, CItemShadow*>> m_vecItemContainer;
     QVector<CTrackItem*> m_vecTrackItems4Video;
     QVector<CTrackItem*> m_vecTrackItems4PIP;
-    int     m_operColumnWidth;
+    int     m_regionWidthOnMax;
     bool    m_bSetCurrentFrame;
 };
 
