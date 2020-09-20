@@ -9,7 +9,7 @@
 #define SMALL_SCALE 8       //小刻度像素高度
 #define FRAME_PER_SEC 30    //fps
 
-const int scaleFactor[20] = {300,270,255,240,225,210,195,180,165,150,135,120,105,90,45,40,30,15,5,1};
+const int scaleFactor[20] = {300,270,180,120,80,60,40,30,25,20,18,16,14,12,10,8,6,3,2,1};
 CEffectHorizonHeader::CEffectHorizonHeader(QWidget *parent)
     :QHeaderView(Qt::Horizontal, parent)
     ,m_pParent(parent)

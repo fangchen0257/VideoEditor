@@ -46,7 +46,7 @@ private:
     void InitSpliter();
 
 private:
-    void AppendClip(int type, QString strText, QImage imgThumb, shared_ptr<Mlt::ClipInfo> clipInfo);
+    CTrackItem* AppendClip(int type, QString strText, QImage imgThumb, shared_ptr<Mlt::ClipInfo> clipInfo);
     QString trackItemText(QString strMediaPath);
     void SelectItem(CTrackItem* pCurItem);
     void RefreshTrackItems(int type);
@@ -85,6 +85,7 @@ private slots:
     void slotSpliterBtnClicked(int x);
     void slotVideoPoregressValueChanged(int value);
     void slotSectionClick(int logicalIndex);
+    void slotHorizonBarChanged(int value);
 
 private:
     CTrackSplit* m_pSpliter;

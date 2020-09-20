@@ -2,6 +2,7 @@
 #include <qpainter.h>
 #include <qevent.h>
 
+#define HEADER_HEIGHT 40
 CTrackSplit::CTrackSplit(QWidget *parent)
     :QWidget(parent)
     ,m_pBtnSplit(nullptr)
@@ -41,9 +42,23 @@ void CTrackSplit::Layout()
         m_pBtnSplit = new CImagButton(vecRes, -1, this);
         if (nullptr == m_pBtnSplit) break;
         connect(m_pBtnSplit, SIGNAL(sigClick(int)), this, SLOT(slotSpliterBtnClicked(int)));
-        m_pBtnSplit->setEnabled(false);
-
         setFixedWidth(SPLITER_FIXED_WIDTH);
+    } while(0);
+}
+
+void CTrackSplit::InitRegionMask()
+{
+    do
+    {
+        if (nullptr == m_pBtnSplit) break;
+
+        QRect rt = rect();
+        QRegion region(rt.left(),rt.top(),rt.width(),HEADER_HEIGHT);
+
+        int xOffset = 2;
+        region += QRegion(rt.width()/2-xOffset,HEADER_HEIGHT,xOffset*2,rt.bottom());
+        region += QRegion(m_pBtnSplit->geometry());
+        setMask(region);
     } while(0);
 }
 
@@ -88,9 +103,6 @@ bool CTrackSplit::eventFilter(QObject *pWatched, QEvent *pEvent)
                 }
             }
         }
-        else {
-            pEvent->ignore();
-        }
     } while(0);
 
     return false;
@@ -110,6 +122,7 @@ void CTrackSplit::showEvent(QShowEvent *pEvent)
     {
         m_pLabMark->move((sz.width()-m_pLabMark->width())/2, 0);
     }
+    InitRegionMask();
 }
 
 void CTrackSplit::paintEvent(QPaintEvent *pEvent)

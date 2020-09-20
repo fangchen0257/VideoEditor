@@ -13,6 +13,7 @@ public:
     CTrackSplit(QWidget* parent = nullptr);
     void SetPosX(int posX);
     int InitializePos();
+    void InitRegionMask();
 
 private:
     void Layout();
