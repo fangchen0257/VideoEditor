@@ -30,7 +30,7 @@ private:
     CImagButton* CreateImgButton(QVector<QString> vecRes, int btnId);
     void ResetMaxBtnImg(bool bIsMaximized);
 
-private slots:
+public slots:
     void slotBtnClick(int btnId);
 
 private:
