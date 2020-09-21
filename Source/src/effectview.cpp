@@ -10,22 +10,19 @@
 #include "qmltypesregister.h"
 #include "uipublic.h"
 #include "mainwin.h"
+#include <qdesktopwidget.h>
+#include <qapplication.h>
 
 #define REGION_WIDTH_NORMAL 1115
-CEffectView::CEffectView(QWidget* parent)
-    :QTableWidget(parent)
-    ,m_pScaleCell(nullptr)
+CEffectView::CEffectView(int row, int column, QWidget *parent)
+    :QTableWidget (row, column, parent)
+    ,m_pEffectHeader(nullptr)
     ,m_pSpliter(nullptr)
     ,m_pCurrentItem(nullptr)
     ,m_regionWidthOnMax(0)
     ,m_bSetCurrentFrame(false)
 {
-    Layout();
-}
-
-CEffectView::CEffectView(int row, int column, QWidget *parent)
-    :QTableWidget (row, column, parent)
-{
+    m_regionWidthOnMax = GetRegionWithOnMax();
     Layout();
 }
 
@@ -35,7 +32,6 @@ void CEffectView::showEvent(QShowEvent *pEvent)
     {
         int posX = FIRST_COLUMN_WIDTH-(m_pSpliter->width()/2);
         m_pSpliter->SetPosX(posX);
-        m_pSpliter->move(posX, 0);
         m_pSpliter->setFixedHeight(height());
     }
 
@@ -47,16 +43,8 @@ bool CEffectView::viewportEvent(QEvent *pEvent)
     do
     {
         if (nullptr == pEvent) break;
-
         if (QEvent::Resize == pEvent->type())
         {
-            if (nullptr != m_pScaleCell)
-            {
-                int regionWidth = columnWidth(COL_OPERA_REGION);
-                if (m_regionWidthOnMax < regionWidth) { m_regionWidthOnMax = regionWidth; }
-                m_pScaleCell->setFixedWidth(regionWidth);
-            }
-
             if (nullptr != m_pSpliter)
             {
                 bool bVisible = m_pSpliter->isVisible();
@@ -72,13 +60,17 @@ void CEffectView::Layout()
 {
     do
     {
-        horizontalHeader()->setVisible(false);
+        m_pEffectHeader = new CEffectHorizonHeader(this);
+        if (nullptr == m_pEffectHeader) break;
+        connect(m_pEffectHeader, &CEffectHorizonHeader::sectionClicked, this, &CEffectView::slotSectionClick);
+        setHorizontalHeader(m_pEffectHeader);
+
         verticalHeader()->setVisible(false);
         horizontalHeader()->setStretchLastSection(true);
         setColumnWidth(COL_EFFECT_NAME, FIRST_COLUMN_WIDTH);
 
         QVector<int> vecRowHeight;
-        vecRowHeight<<40<<65<<65<<35<<35<<35<<35<<35;
+        vecRowHeight<<65<<65<<35<<35<<35<<35<<35;
         for (int i=0; i<ROW_CNT; i++)
         {
             setRowHeight(i,vecRowHeight[i]);
@@ -91,10 +83,10 @@ void CEffectView::Layout()
         setShowGrid(false);
         setAlternatingRowColors(true);
         setStyleSheet("QTableWidget {border:0px; background-color: #212735; alternate-background-color: #252b39;}");
+        connect(horizontalScrollBar(), SIGNAL(valueChanged(int)), SLOT(slotHorBarValueChanged(int)));
 
         InitFirstColumn();
         InitTrackContainer();
-        InitScaleCellWidget();
         InitSpliter();
     } while(0);
 }
@@ -220,25 +212,9 @@ void CEffectView::InitTrackContainer()
     }
 }
 
-void CEffectView::InitScaleCellWidget()
-{
-    do
-    {
-        m_pScaleCell = new CScaleCell;
-        if (nullptr == m_pScaleCell) break;
-        connect(m_pScaleCell, &CScaleCell::sigScaleClick, this, &CEffectView::slotScaleCellClick);
-
-        CBox* pHboxContainer = m_vecItemContainer[ROW_SCALE].first;
-        if (nullptr != pHboxContainer)
-        {
-            pHboxContainer->PackStart(m_pScaleCell);
-        }
-    } while(0);
-}
-
 void CEffectView::InitSpliter()
 {
-    m_pSpliter = new CTrackSplit(viewport());
+    m_pSpliter = new CTrackSplit(this);
     if (nullptr != m_pSpliter)
     {
         connect(m_pSpliter, SIGNAL(sigSpliterMove(int,int)), this, SLOT(slotSpliterMove(int,int)));
@@ -377,7 +353,7 @@ void CEffectView::RefreshTrackItems(int type)
     }else {
         if (nullptr != m_pSpliter) { m_pSpliter->setVisible(false); }
     }
-    ResetColumnWidth();
+    ResetScaleWidth();
 }
 
 void CEffectView::DeleteTrackItems(QVector<CTrackItem *> &vecTrackItems)
@@ -396,7 +372,7 @@ void CEffectView::DeleteTrackItems(QVector<CTrackItem *> &vecTrackItems)
     vecTrackItems.clear();
 }
 
-void CEffectView::ResetColumnWidth()
+void CEffectView::ResetScaleWidth()
 {
     int totalWidth = 0;
     int videoW = itemWidth(ROW_VIDEO);
@@ -416,7 +392,6 @@ void CEffectView::ResetColumnWidth()
         totalWidth = regionWidth;
     }
     setColumnWidth(COL_OPERA_REGION, totalWidth);
-    if (nullptr != m_pScaleCell) { m_pScaleCell->setFixedWidth(totalWidth); }
     emit sigColumnWidthChanged(totalWidth);
 }
 
@@ -444,7 +419,7 @@ void CEffectView::ResetProducer(int type, int positon)
 
         pGlobalObj->GetMltCtrl().EUSetProducer(pProducer);
         pGlobalObj->IniViewDuration();
-        pGlobalObj->seekToPos(positon);
+        pGlobalObj->seekToPos(positon+1);
     } while(0);
 }
 
@@ -460,8 +435,16 @@ void CEffectView::AdjustSpliterPos()
 
 double CEffectView::GetPixelPerFrame()
 {
-    if (nullptr == m_pScaleCell) return 0.0;
-    return m_pScaleCell->getPixelPerFrame();
+    if (nullptr == m_pEffectHeader) return 0.0;
+    return m_pEffectHeader->getPixelPerFrame();
+}
+
+int CEffectView::GetRegionWithOnMax()
+{
+    QRect rect = QApplication::desktop()->availableGeometry();
+
+    int xOffset = 5;
+    m_regionWidthOnMax = rect.width()-FIRST_COLUMN_WIDTH-xOffset;
 }
 
 void CEffectView::addItem2Vector(int type, CTrackItem *pItem)
@@ -645,7 +628,7 @@ void CEffectView::slotAddMedia2Track(int type, const QVariant &media)
         QImage imgThumb = pMainTrack->clip(clipIndex)->image(IMG_THUMB_W, IMG_THUMB_H);
         CTrackItem* pTrackItem = AppendClip(type, trackItemText(mediaPath), imgThumb, clipInfo);
         if (nullptr != pTrackItem) { slotTrackItemSelect(pTrackItem); }
-        ResetColumnWidth();
+        ResetScaleWidth();
 
         qDebug() << "slotAddMedia2Track leave";
     } while(0);
@@ -685,7 +668,7 @@ void CEffectView::slotAddPIP2Track(int type, const QVariant &media)
         QImage imgThumb = pSubTrack->clip(clipIndex)->image(IMG_THUMB_W, IMG_THUMB_H);
         CTrackItem* pTrackItem = AppendClip(type, trackItemText(mediaPath), imgThumb, clipInfo);
         if (nullptr != pTrackItem) { slotTrackItemSelect(pTrackItem); }
-        ResetColumnWidth();
+        ResetScaleWidth();
         qDebug() << "slotAddPIP2Track leave";
     } while(0);
 }
@@ -705,10 +688,10 @@ void CEffectView::slotTrackItemSelect(CTrackItem *pItem)
 
 void CEffectView::slotScaleValueChanged(int value)
 {
-    if (nullptr == m_pScaleCell) return;
+    if (nullptr == m_pEffectHeader) return;
 
-    m_pScaleCell->setScaleFactor(value);
-    double pixePerFrame = m_pScaleCell->getPixelPerFrame();
+    m_pEffectHeader->setScaleFactor(value);
+    double pixePerFrame = m_pEffectHeader->getPixelPerFrame();
     qDebug() << "value" << value << "current pixePerFrame:" <<pixePerFrame;
 
     QVector<CTrackItem*> vecAllItems = getAllTrackItems();
@@ -719,7 +702,8 @@ void CEffectView::slotScaleValueChanged(int value)
 
         pItem->ResetPixelPerFrame(pixePerFrame);
     }
-    ResetColumnWidth();
+
+    ResetScaleWidth();
     AdjustSpliterPos();
 }
 
@@ -855,23 +839,35 @@ void CEffectView::slotSpliterBtnClicked(int x)
 void CEffectView::slotVideoPoregressValueChanged(int value)
 {
     if (nullptr==m_pSpliter || m_bSetCurrentFrame) return;
-    qDebug() << "CEffectView::slotVideoPoregressValueChanged : " << value;
 
     if (isTrackProducer())
     {
         double pixelPerFrame = GetPixelPerFrame();
         int pixel = static_cast<int>(pixelPerFrame*value);
-        m_pSpliter->move(pixel+m_pSpliter->InitializePos()-horScrollBarValue(), 0);
+        int barValue = horScrollBarValue();
+        qDebug() << "CEffectView::slotVideoPoregressValueChanged :" << pixel << " " << barValue << " " << value;
+
+        m_pSpliter->move(pixel+m_pSpliter->InitializePos()-barValue, 0);
     }
 }
 
-void CEffectView::slotScaleCellClick()
+void CEffectView::slotSectionClick(int logicalIndex)
 {
-    QPoint ptCursor = QCursor::pos();
-    QPoint ptCur = mapFromGlobal(ptCursor);
-    if (nullptr != m_pSpliter)
+    if (COL_OPERA_REGION == logicalIndex)
     {
-        slotSpliterMove(ptCur.x()-m_pSpliter->width()/2, 0);
+        QPoint ptCursor = QCursor::pos();
+        QPoint ptCur = m_pEffectHeader->mapFromGlobal(ptCursor);
+        if (nullptr != m_pSpliter)
+        {
+            slotSpliterMove(ptCur.x()-m_pSpliter->width()/2, 0);
+        }
     }
+}
+
+void CEffectView::slotHorBarValueChanged(int value)
+{
+    Q_UNUSED(value);
+
+    AdjustSpliterPos();
 }
 

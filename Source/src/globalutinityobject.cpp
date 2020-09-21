@@ -59,12 +59,8 @@ void GlobalUtinityObject::focusInTimeEdit(const int x, const int y)
 
 void GlobalUtinityObject::addVideoToPlayView(const QVariant &fileUrl)
 {
-  auto videoPath = fileUrl.toUrl().path();
-  auto pos = videoPath.indexOf(":");
-  if(-1 != pos){
-      videoPath = videoPath.mid(pos - 1);
-  }
 
+  auto videoPath = getRealVideoPath(fileUrl);
   m_MltCtrl.EUOpen(videoPath.toUtf8().data());
   ResetDuration();
   m_bPlaying = true;
@@ -91,6 +87,24 @@ void GlobalUtinityObject::scaleSliderValueChanged(int value)
 void GlobalUtinityObject::videoProgressValueChanged(int value)
 {
     emit sigVideoProgressValueChanged(value);
+}
+
+QString GlobalUtinityObject::getRealVideoPath(const QVariant &url)
+{
+    auto videoPath = url.toUrl().path();
+    auto pos = videoPath.indexOf(":");
+    if(-1 != pos){
+        videoPath = videoPath.mid(pos - 1);
+    }
+    return videoPath;
+}
+
+QVariant GlobalUtinityObject::getVideoCoverImage(const QVariant& url)
+{
+    auto videoRealPath = getRealVideoPath(url);
+    qDebug() << videoRealPath.toUtf8().data();
+    return  "file:///C:/Users/dfei/Desktop/timg.jpg";
+
 }
 
 void GlobalUtinityObject::ResetDuration()

@@ -9,6 +9,7 @@ Item{
     property int videoId: 0
     property bool selected: false
     property alias videoName: nameText.text
+    property alias voideCoverUrl: coverImage.source
     id: root
     width: 120
     height: 80
@@ -48,10 +49,11 @@ Item{
     Rectangle {
         id: imageRect
         color: "#000000"
-        height: 68
+        height: 60
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
+        border.width: 1
         border.color: {
             if(selected || mouseMoveOn){
                 "#ff3c3c"
@@ -61,7 +63,12 @@ Item{
             }
         }
 
-        border.width: 1
+        Image {
+            id: coverImage
+            anchors.centerIn: parent
+            width: 100
+            height: 50
+        }
 
         Row{
             anchors.centerIn: parent
@@ -94,7 +101,7 @@ Item{
                 bgNormal: "qrc:/res/videodel.png"
                 bgHover: "qrc:/res/videodel_h.png"
                 bgPressed: "qrc:/res/videodel_h.png"
-                onClicked: imageRect.visible = false
+                onClicked: root.visible = false
             }
         }
     }
@@ -102,13 +109,14 @@ Item{
     Text {
         id: nameText
         anchors.top: imageRect.bottom
-        anchors.left: parent.left
+        anchors.left: imageRect.left
         anchors.bottom: parent.bottom
-        anchors.right: parent.right
+        anchors.right: imageRect.right
         renderType: Text.NativeRendering
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         font.pixelSize: 14
+        elide: Text.ElideRight
         color: if(selected || mouseMoveOn){
                    "#ff3c3c"
                }

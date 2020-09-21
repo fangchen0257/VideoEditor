@@ -2,6 +2,7 @@ import QtQuick 2.0
 import QtQuick.Controls 2.0
 import QtQml 2.0
 import Qt.labs.platform 1.0
+
 import "./"
 import "../component" as LibQmlComponent
 Item {
@@ -104,7 +105,7 @@ Item {
 
     // video show view
     Rectangle {
-        anchors.left: splitVLine.right
+        anchors.left:  splitVLine.right
         anchors.top: splitHLine.bottom
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -114,11 +115,11 @@ Item {
             spacing: 10
             anchors.margins: 10
             anchors.fill: parent
+            width: 200
         }
     }
 
     function createVideoItem(pathList){
-
         for(var index = 0; index < pathList.length; ++index)
         {
             var itemObj = Qt.createComponent("qrc:/qmls/filters/SourceVideoItem.qml")
@@ -127,6 +128,7 @@ Item {
                 var videoItem = itemObj.createObject(videoLayout)
                 var fileUrl = pathList[index]
                 videoItem.videoPath = fileUrl
+                videoItem.voideCoverUrl = _global_utinity_obj.getVideoCoverImage(fileUrl)
                 var fileSplit = fileUrl.split('/')
                 if(fileSplit.length > 0){
                     videoItem.videoName = fileSplit[fileSplit.length - 1]

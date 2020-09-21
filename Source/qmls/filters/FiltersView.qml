@@ -1,4 +1,6 @@
 import QtQuick 2.0
+import QtQuick.Controls 1.4
+import QtQuick.Controls.Styles 1.4
 import "./"
 
 Item {
@@ -14,26 +16,56 @@ Item {
         FilterNavigationBar{
             anchors.fill: parent
 
-            onSelectedVideo: filterLoader.source = "qrc:/qmls/filters/FliterVideo.qml"
-            onSelectedPhoto: filterLoader.source = "qrc:/qmls/filters/FilterPhoto.qml"
-            onSelectedMusic: filterLoader.source ="qrc:/qmls/filters/FilterMusic.qml"
-            onSelectedTrans: filterLoader.source = "qrc:/qmls/filters/FilterTransition.qml"
-            onSelectedText:  filterLoader.source = "qrc:/qmls/filters/FilterText.qml"
-            onSelectedFilter: filterLoader.source = "qrc:/qmls/filters/FilterFilter.qml"
+            onSelectedVideo: tabManager.currentIndex = 0
+            onSelectedPhoto: tabManager.currentIndex = 1
+            onSelectedMusic: tabManager.currentIndex = 2
+            onSelectedTrans: tabManager.currentIndex = 3
+            onSelectedText:  tabManager.currentIndex = 4
+            /*onSelectedFilter: navigationView.push(videoFliter)*/
         }
     }
 
-    Loader{
-        id: filterLoader
+    TabView{
+        id: tabManager
         anchors.left: parent.left
         anchors.top: navigation.bottom
         anchors.right: parent.right
         anchors.bottom: parent.bottom
+        style: TabViewStyle  {
+                    tab: Rectangle {
+                        implicitWidth: 0
+                        implicitHeight: 0
+                    }
+                }
+        Tab{
+            FliterVideo{
+            }
+        }
+
+        Tab{
+            FilterPhoto{
+            }
+        }
+
+        Tab{
+            FilterMusic{}
+        }
+
+        Tab{
+            FilterTransition{
+            }
+        }
+
+        Tab{
+            FilterText{
+
+            }
+        }
+
     }
 
     Component.onCompleted: {
 
-        filterLoader.source = "qrc:/qmls/filters/FliterVideo.qml"
     }
 
 }

@@ -13,7 +13,7 @@
 
 typedef enum _MEDIA_ITEM_TYPE_
 {
-    MEDIA_VIDEO = 1,
+    MEDIA_VIDEO,
     MEDIA_PIP,
     MEDIA_FILTER,
     MEDIA_TEXT,
@@ -40,6 +40,9 @@ public:
     Q_INVOKABLE void addPIPToTrack(const QVariant& fileUrl);
     Q_INVOKABLE void scaleSliderValueChanged(int value);
     Q_INVOKABLE void videoProgressValueChanged(int value);
+    Q_INVOKABLE QString getRealVideoPath(const QVariant& url);
+    /*return format: file:///D:/a/a/b*/
+    Q_INVOKABLE QVariant getVideoCoverImage(const QVariant& url);
     void ResetDuration();
     void IniViewDuration();
     void SwitchPlayState();

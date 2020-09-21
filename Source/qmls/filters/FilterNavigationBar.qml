@@ -46,6 +46,7 @@ Item {
                 textColor: checked ? selectColor : normalColor
                 displayText: qsTr("Photo");
                 onClicked: selectedPhoto()
+                visible: false
 
             }
 
@@ -91,6 +92,7 @@ Item {
                 textColor: checked ? selectColor : normalColor
                 displayText: qsTr("Filter");
                 onClicked: selectedFilter()
+                visible: true
 
             }
         }

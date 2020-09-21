@@ -7,7 +7,7 @@
 #include "EUTractor.h"
 #include "QtLib/public.h"
 #include "tracksplit.h"
-#include "scalecell.h"
+#include "effecthorizonheader.h"
 
 enum _TRACK_OPER_
 {
@@ -18,7 +18,6 @@ enum _TRACK_OPER_
 
 enum _ROW_ITEMS_
 {
-    ROW_SCALE,
     ROW_VIDEO,
     ROW_PICINPIC,
     ROW_FILTERS,
@@ -28,19 +27,10 @@ enum _ROW_ITEMS_
     ROW_CNT
 };
 
-enum _COLUMN_ITEMS_
-{
-    COL_EFFECT_NAME,
-    COL_OPERA_REGION,
-    COL_CNT
-};
-
-#define FIRST_COLUMN_WIDTH 150
 class CEffectView: public QTableWidget
 {
     Q_OBJECT
 public:
-    CEffectView(QWidget* parent = nullptr);
     CEffectView(int row, int column, QWidget* parent = nullptr);
 
 protected:
@@ -52,7 +42,6 @@ private:
     void InitFirstColumn();
     CBox* InitCellItem(QString strIcon, QString strText, QVector<QString> vecResLock, QVector<QString> vecVisible, QVector<QString> vecMute);
     void InitTrackContainer();
-    void InitScaleCellWidget();
     void InitSpliter();
 
 private:
@@ -61,11 +50,12 @@ private:
     void SelectItem(CTrackItem* pCurItem);
     void RefreshTrackItems(int type);
     void DeleteTrackItems(QVector<CTrackItem*>& vecTrackItems);
-    void ResetColumnWidth();
+    void ResetScaleWidth();
     void ResetSpliter(bool bVisible);
     void ResetProducer(int type, int positon);
     void AdjustSpliterPos();
     double GetPixelPerFrame();
+    int GetRegionWithOnMax();
 
 private:
     void addItem2Vector(int type, CTrackItem* pItem);
@@ -96,10 +86,11 @@ private slots:
     void slotSpliterMove(int x, int y);
     void slotSpliterBtnClicked(int x);
     void slotVideoPoregressValueChanged(int value);
-    void slotScaleCellClick();
+    void slotSectionClick(int logicalIndex);
+    void slotHorBarValueChanged(int value);
 
 private:
-    CScaleCell* m_pScaleCell;   //刻度尺
+    CEffectHorizonHeader* m_pEffectHeader;
     CTrackSplit* m_pSpliter;
     CTrackItem* m_pCurrentItem;
 
